@@ -13,6 +13,11 @@ public class LocationDTO {
         city = location.getCity();
     }
 
+    public LocationDTO(String country, String city) {
+        this.country = country;
+        this.city = city;
+    }
+
     public LocationDTO() {
 
     }

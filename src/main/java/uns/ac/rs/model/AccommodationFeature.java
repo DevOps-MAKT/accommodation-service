@@ -12,4 +12,12 @@ public class AccommodationFeature {
     private Long id;
 
     private String feature;
+
+    public AccommodationFeature() {
+
+    }
+
+    public AccommodationFeature(String feature) {
+        this.feature = feature;
+    }
 }

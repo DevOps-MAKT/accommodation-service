@@ -15,4 +15,8 @@ public class AccommodationFeatureDTO {
     public AccommodationFeatureDTO(AccommodationFeature accommodationFeature) {
         this.feature = accommodationFeature.getFeature();
     }
+
+    public AccommodationFeatureDTO(String feature) {
+        this.feature = feature;
+    }
 }

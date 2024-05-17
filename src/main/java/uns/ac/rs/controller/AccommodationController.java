@@ -29,7 +29,7 @@ public class AccommodationController {
     public Response createAccommodation(@HeaderParam("Authorization") String authorizationHeader, AccommodationRequestDTO accommodationDTO) {
         // #TODO load the URL based on the env
         GeneralResponse response = microserviceCommunicator.processResponse(
-                "http://localhost:8001/user-service/auth/authorize/admin",
+                "http://localhost:8001/user-service/auth/authorize/host",
                 "GET",
                 authorizationHeader);
 
@@ -39,7 +39,8 @@ public class AccommodationController {
         }
 
         Accommodation accommodation = accommodationService.createAccommodation(accommodationDTO, userEmail);
-        return Response.ok().entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation, userEmail),
+        return Response.status(Response.Status.CREATED)
+                .entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation, userEmail),
                 "Accommodation successfully created"))
                 .build();
     }

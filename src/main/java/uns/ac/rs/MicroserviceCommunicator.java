@@ -1,6 +1,6 @@
 package uns.ac.rs;
 
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-@Service
+@ApplicationScoped
 public class MicroserviceCommunicator {
 
     public GeneralResponse processResponse(String apiUrl, String requestMethod, String authorizationHeader) {
@@ -16,7 +16,7 @@ public class MicroserviceCommunicator {
     }
     private GeneralResponse sendRequest(String apiUrl, String requestMethod, String authorizationHeader) {
         StringBuilder response = new StringBuilder();
-        int responseCode = 200;
+        int responseCode = 500;
         try {
 
             URL url = new URL(apiUrl);

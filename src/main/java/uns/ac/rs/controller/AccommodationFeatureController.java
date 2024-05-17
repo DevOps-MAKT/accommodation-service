@@ -8,6 +8,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
 import uns.ac.rs.model.AccommodationFeature;
 import uns.ac.rs.service.AccommodationFeatureService;
@@ -33,6 +34,8 @@ public class AccommodationFeatureController {
         for (AccommodationFeature accommodationFeature: accommodationFeatures) {
             accommodationFeatureDTOS.add(new AccommodationFeatureDTO(accommodationFeature));
         }
-        return Response.ok().entity(accommodationFeatureDTOS).build();
+        return Response.ok()
+                .entity(new GeneralResponse<>(accommodationFeatureDTOS, "Successfully retrieved accommodation features"))
+                .build();
     }
 }
