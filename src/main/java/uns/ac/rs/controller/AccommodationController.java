@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
-import uns.ac.rs.dto.AvailabilityPeriodDTO;
+import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.model.Accommodation;
@@ -44,7 +44,7 @@ public class AccommodationController {
 
         String userEmail = (String) response.getData();
         if (userEmail.equals("")) {
-            return Response.status(401).entity(response).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
 
         Accommodation accommodation = accommodationService.createAccommodation(accommodationDTO, userEmail);
@@ -64,7 +64,7 @@ public class AccommodationController {
                 authorizationHeader);
         String userEmail = (String) response.getData();
         if (userEmail.equals("")) {
-            return Response.status(401).entity(response).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
         List<Accommodation> hostsAccommodations = accommodationService.getHostsAccommodations(userEmail);
         List<AccommodationResponseDTO> accommodationResponseDTOS = new ArrayList<>();
@@ -79,8 +79,8 @@ public class AccommodationController {
     }
 
     @POST
-    @Path("/availability-period/create")
-    public Response createAvailabilityPeriod(@HeaderParam("Authorization") String authorizationHeader, AvailabilityPeriodDTO availabilityPeriodDTO) {
+    @Path("/change-availability-and-price-info")
+    public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
         // #TODO load the URL based on the env
         GeneralResponse response = microserviceCommunicator.processResponse(
                 "http://localhost:8001/user-service/auth/authorize/host",
@@ -89,18 +89,31 @@ public class AccommodationController {
 
         String userEmail = (String) response.getData();
         if (userEmail.equals("")) {
-            return Response.status(401).entity(response).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
-        boolean areDatesValid = availabilityPeriodService.areAvailabilityPeriodDatesValid(availabilityPeriodDTO);
-        if (!areDatesValid) {
+
+        if (!additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()){
+            boolean areAvailabilityDatesValid = availabilityPeriodService.areAvailabilityPeriodDatesValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
+            if (!areAvailabilityDatesValid) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(new GeneralResponse<>("", "Provided availability period dates aren't valid"))
+                        .build();
+            }
+        }
+
+        boolean areSpecialAccommodationPriceDatesValid = availabilityPeriodService
+                .areSpecialAccommodationPriceDatePeriodsValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
+        if (!areSpecialAccommodationPriceDatesValid) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new GeneralResponse<>("", "Provided dates aren't valid"))
+                    .entity(new GeneralResponse<>("", "Provided special price dates aren't valid"))
                     .build();
         }
-        Accommodation accommodation = availabilityPeriodService.createAvailabilityPeriod(availabilityPeriodDTO);
+        Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
+
         return Response.status(Response.Status.CREATED)
                 .entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation),
-                        "Availability period successfully added"))
+                            "Availability period successfully added"))
                 .build();
+
     }
 }

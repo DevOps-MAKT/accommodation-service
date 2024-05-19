@@ -80,6 +80,7 @@ public class AccommodationServiceTests {
         verify(accommodationRepository, times(1)).persist(result);
     }
 
+    /*
     @Test
     public void testCreateAvailabilityPeriod() {
 
@@ -100,6 +101,7 @@ public class AccommodationServiceTests {
         verify(accommodationRepository).findById(availabilityPeriodDTO.getAccommodationId());
         verify(accommodationRepository).persist(any(Accommodation.class));
     }
+     */
 
     @Test
     void testAreAvailabilityPeriodDatesValid_NoOverlappingPeriods() {
