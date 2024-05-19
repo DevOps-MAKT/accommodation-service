@@ -28,7 +28,7 @@ public class AccommodationService {
     @Autowired
     private LocationRepository locationRepository;
 
-    public Accommodation createAccommodation(AccommodationRequestDTO accommodationDTO, String userEmail) {
+    public Accommodation createAccommodation(AccommodationRequestDTO accommodationDTO, String hostEmail) {
         Location location = locationRepository.findByCityAndCountry(accommodationDTO.getLocation().getCity(), accommodationDTO.getLocation().getCountry());
 
         List<AccommodationFeature> accommodationFeatures = new ArrayList<>();
@@ -36,9 +36,13 @@ public class AccommodationService {
             accommodationFeatures.add(accommodationFeatureRepository.findByFeature(accommodationFeatureDTO.getFeature()));
         }
 
-        Accommodation accommodation = new Accommodation(location, accommodationFeatures, accommodationDTO, userEmail);
+        Accommodation accommodation = new Accommodation(location, accommodationFeatures, accommodationDTO, hostEmail);
         accommodationRepository.persist(accommodation);
 
         return accommodation;
+    }
+
+    public List<Accommodation> getHostsAccommodations(String hostEmail) {
+        return accommodationRepository.findByHostEmail(hostEmail);
     }
 }

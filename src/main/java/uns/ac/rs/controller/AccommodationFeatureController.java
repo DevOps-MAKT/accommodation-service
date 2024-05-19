@@ -17,7 +17,7 @@ import uns.ac.rs.service.AccommodationService;
 import java.util.ArrayList;
 import java.util.List;
 
-@Path("/accommodation-features")
+@Path("/accommodation-feature")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

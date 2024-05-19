@@ -19,7 +19,7 @@ public class Accommodation {
     @JoinColumn(name="location_id")
     private Location location;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "accommodation_accommodation_feature",
             joinColumns = @JoinColumn(name = "accommodation_id"),
@@ -27,7 +27,7 @@ public class Accommodation {
     )
     private List<AccommodationFeature> features;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "accommodation_photographs", joinColumns = @JoinColumn(name = "accommodation_id"))
     @Column(name = "photographs")
     private List<String> photographs;
@@ -41,6 +41,11 @@ public class Accommodation {
 
     @Column(name = "host_email")
     private String hostEmail;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "accommodation_id")
+    private List<AvailabilityPeriod> availabilityPeriods;
+
 
     public Accommodation(Location location, List<AccommodationFeature> accommodationFeatures, AccommodationRequestDTO accommodationDTO, String hostEmail) {
         this.location = location;
