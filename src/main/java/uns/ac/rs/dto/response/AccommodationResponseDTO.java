@@ -2,6 +2,7 @@ package uns.ac.rs.dto.response;
 
 import lombok.Data;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
+import uns.ac.rs.dto.AvailabilityPeriodDTO;
 import uns.ac.rs.dto.LocationDTO;
 import uns.ac.rs.model.Accommodation;
 import uns.ac.rs.model.AccommodationFeature;
@@ -20,7 +21,9 @@ public class AccommodationResponseDTO {
     private int minimumNoGuests;
     private int maximumNoGuests;
     private String hostEmail;
-    private List<AvailabilityPeriod> availabilityPeriods;
+    private boolean isPricePerGuest;
+    private float price;
+    private List<AvailabilityPeriodDTO> availabilityPeriods;
 
 
     public AccommodationResponseDTO(Accommodation accommodation) {
@@ -35,6 +38,14 @@ public class AccommodationResponseDTO {
         this.minimumNoGuests = accommodation.getMinimumNoGuests();
         this.maximumNoGuests = accommodation.getMaximumNoGuests();
         this.hostEmail = accommodation.getHostEmail();
-        this.availabilityPeriods = accommodation.getAvailabilityPeriods();
+        if (accommodation.getAvailabilityPeriods() != null) {
+            List<AvailabilityPeriodDTO> availabilityPeriods = new ArrayList<>();
+            for (AvailabilityPeriod availabilityPeriod: accommodation.getAvailabilityPeriods()) {
+                availabilityPeriods.add(new AvailabilityPeriodDTO(availabilityPeriod, accommodation.getId()));
+            }
+            this.availabilityPeriods = availabilityPeriods;
+        }
+        this.isPricePerGuest = accommodation.isPricePerGuest();
+        this.price = accommodation.getPrice();
     }
 }

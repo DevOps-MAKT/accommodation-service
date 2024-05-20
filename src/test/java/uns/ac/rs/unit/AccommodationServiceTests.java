@@ -7,14 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uns.ac.rs.dto.AccommodationFeatureDTO;
-import uns.ac.rs.dto.AvailabilityPeriodDTO;
-import uns.ac.rs.dto.LocationDTO;
+import uns.ac.rs.dto.*;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
-import uns.ac.rs.model.Accommodation;
-import uns.ac.rs.model.AccommodationFeature;
-import uns.ac.rs.model.AvailabilityPeriod;
-import uns.ac.rs.model.Location;
+import uns.ac.rs.model.*;
 import uns.ac.rs.repository.AccommodationFeatureRepository;
 import uns.ac.rs.repository.AccommodationRepository;
 import uns.ac.rs.repository.AvailabilityPeriodRepository;
@@ -88,12 +83,18 @@ public class AccommodationServiceTests {
         availabilityPeriodDTO.setEndDate(1716328800000L);
         availabilityPeriodDTO.setAccommodationId(1L);
 
+        AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO = new AdditionalAccommodationInfoDTO();
+        additionalAccommodationInfoDTO.setAvailabilityPeriod(availabilityPeriodDTO);
+        additionalAccommodationInfoDTO.setPrice(121.21F);
+        additionalAccommodationInfoDTO.setIsAvailabilityPeriodBeingUpdated(false);
+        additionalAccommodationInfoDTO.setIsPricePerGuest(true);
+
         Accommodation accommodation = new Accommodation();
         List<AvailabilityPeriod> availabilityPeriods = new ArrayList<>();
         accommodation.setAvailabilityPeriods(availabilityPeriods);
         when(accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId())).thenReturn(accommodation);
 
-        Accommodation result = availabilityPeriodService.createAvailabilityPeriod(availabilityPeriodDTO);
+        Accommodation result = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
 
         assertEquals(result.getAvailabilityPeriods().size(), 1);
         verify(availabilityPeriodRepository).persist(any(AvailabilityPeriod.class));
@@ -135,10 +136,48 @@ public class AccommodationServiceTests {
 
         when(accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId())).thenReturn(accommodation);
 
-        // Execute
         boolean result = availabilityPeriodService.areAvailabilityPeriodDatesValid(availabilityPeriodDTO);
 
-        // Verify
         assertFalse(result);
+    }
+
+    @Test
+    void testAreSpecialAccommodationPriceDatePeriodsValid_OverlappingPeriods() {
+
+        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
+        availabilityPeriodDTO.setStartDate(1000000000L);
+        availabilityPeriodDTO.setEndDate(2000000000L);
+        availabilityPeriodDTO.setAccommodationId(1L);
+
+        SpecialAccommodationPricePeriodDTO specialAccommodationPricePeriodDTO = new SpecialAccommodationPricePeriodDTO();
+        specialAccommodationPricePeriodDTO.setStartDate(2000000001L);
+        specialAccommodationPricePeriodDTO.setEndDate(2100000000L);
+        List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods = new ArrayList<>();
+        specialAccommodationPricePeriods.add(specialAccommodationPricePeriodDTO);
+        availabilityPeriodDTO.setSpecialAccommodationPricePeriods(specialAccommodationPricePeriods);
+
+        boolean result = availabilityPeriodService.areSpecialAccommodationPriceDatePeriodsValid(availabilityPeriodDTO);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testAreSpecialAccommodationPriceDatePeriodsValid_NoOverlappingPeriods() {
+
+        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
+        availabilityPeriodDTO.setStartDate(1000000000L);
+        availabilityPeriodDTO.setEndDate(2000000000L);
+        availabilityPeriodDTO.setAccommodationId(1L);
+
+        SpecialAccommodationPricePeriodDTO specialAccommodationPricePeriodDTO = new SpecialAccommodationPricePeriodDTO();
+        specialAccommodationPricePeriodDTO.setStartDate(1200000000L);
+        specialAccommodationPricePeriodDTO.setEndDate(1400000000L);
+        List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods = new ArrayList<>();
+        specialAccommodationPricePeriods.add(specialAccommodationPricePeriodDTO);
+        availabilityPeriodDTO.setSpecialAccommodationPricePeriods(specialAccommodationPricePeriods);
+
+        boolean result = availabilityPeriodService.areSpecialAccommodationPriceDatePeriodsValid(availabilityPeriodDTO);
+
+        assertTrue(result);
     }
 }

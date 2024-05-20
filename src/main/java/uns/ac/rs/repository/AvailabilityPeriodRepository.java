@@ -13,4 +13,8 @@ public class AvailabilityPeriodRepository implements PanacheRepository<Availabil
         return list("accommodation_id = ?1", accommodationId);
     }
 
+    public AvailabilityPeriod findById(long id) {
+        return find("id = ?1", id).firstResult();
+    }
+
 }

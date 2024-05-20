@@ -46,6 +46,12 @@ public class Accommodation {
     @JoinColumn(name = "accommodation_id")
     private List<AvailabilityPeriod> availabilityPeriods;
 
+    @Column(name = "price")
+    private float price;
+
+    @Column(name = "is_price_per_guest")
+    private boolean isPricePerGuest;
+
 
     public Accommodation(Location location, List<AccommodationFeature> accommodationFeatures, AccommodationRequestDTO accommodationDTO, String hostEmail) {
         this.location = location;
