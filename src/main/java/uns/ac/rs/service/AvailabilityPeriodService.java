@@ -74,10 +74,12 @@ public class AvailabilityPeriodService {
 
     private List<SpecialAccommodationPricePeriod> saveSpecialAccommodationPricePeriods(AvailabilityPeriodDTO availabilityPeriodDTO) {
         List<SpecialAccommodationPricePeriod> specialAccommodationPricePeriods = new ArrayList<>();
-        for (SpecialAccommodationPricePeriodDTO specialAccommodationPricePeriodDTO : availabilityPeriodDTO.getSpecialAccommodationPricePeriods()) {
-            SpecialAccommodationPricePeriod specialAccommodationPricePeriod = new SpecialAccommodationPricePeriod(specialAccommodationPricePeriodDTO);
-            specialAccommodationPricePeriodRepository.persist(specialAccommodationPricePeriod);
-            specialAccommodationPricePeriods.add(specialAccommodationPricePeriod);
+        if (availabilityPeriodDTO.getSpecialAccommodationPricePeriods() != null) {
+            for (SpecialAccommodationPricePeriodDTO specialAccommodationPricePeriodDTO : availabilityPeriodDTO.getSpecialAccommodationPricePeriods()) {
+                SpecialAccommodationPricePeriod specialAccommodationPricePeriod = new SpecialAccommodationPricePeriod(specialAccommodationPricePeriodDTO);
+                specialAccommodationPricePeriodRepository.persist(specialAccommodationPricePeriod);
+                specialAccommodationPricePeriods.add(specialAccommodationPricePeriod);
+            }
         }
         return specialAccommodationPricePeriods;
     }

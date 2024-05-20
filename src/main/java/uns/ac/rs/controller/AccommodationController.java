@@ -110,7 +110,8 @@ public class AccommodationController {
         }
         Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
 
-        return Response.status(Response.Status.CREATED)
+        return Response
+                .ok()
                 .entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation),
                             "Availability period successfully added"))
                 .build();

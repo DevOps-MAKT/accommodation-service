@@ -34,8 +34,8 @@ public class AccommodationControllerTests {
     URL getHostsAccommodationsEndpoint;
 
     @TestHTTPEndpoint(AccommodationController.class)
-    @TestHTTPResource("availability-period/create")
-    URL createAvailabilityPeriod;
+    @TestHTTPResource("change-availability-and-price-info")
+    URL changeAvailabilityAndPriceInfoEndpoint;
 
     @InjectMock
     private MicroserviceCommunicator microserviceCommunicator;
@@ -153,11 +153,24 @@ public class AccommodationControllerTests {
 
     @Test
     @Order(4)
-    public void whenCreateAvailabilityPeriod_thenReturnUpdatedAccommodation() {
-        String requestBody = "{" +
-                "\"startDate\": 1716156000000," +
-                "\"endDate\": 1716328800000," +
-                "\"accommodationId\": 1" +
+    public void whenCreateAvailabilityAndPriceInfo_thenReturnChangedAccommodation() {
+        String requestBody = "{\n" +
+                "    \"availabilityPeriod\": {" +
+                "        \"id\": 1," +
+                "        \"startDate\": 1714514400000," +
+                "        \"endDate\": 1717106400000," +
+                "        \"accommodationId\": 1," +
+                "        \"specialAccommodationPricePeriods\": [" +
+                "            {" +
+                "                \"startDate\": 1714687200000," +
+                "                \"endDate\": 1715119200000," +
+                "                \"price\": 209.32" +
+                "            }" +
+                "        ]" +
+                "    }," +
+                "    \"price\": 121.20," +
+                "    \"isPricePerGuest\": true," +
+                "    \"isAvailabilityPeriodBeingUpdated\": false" +
                 "}";
 
         doReturn(new GeneralResponse("host@gmail.com", "200"))
@@ -171,9 +184,9 @@ public class AccommodationControllerTests {
                 .header("Authorization", "Bearer good-jwt")
                 .body(requestBody)
         .when()
-                .post(createAvailabilityPeriod)
+                .post(changeAvailabilityAndPriceInfoEndpoint)
         .then()
-                .statusCode(201)
+                .statusCode(200)
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
@@ -182,16 +195,38 @@ public class AccommodationControllerTests {
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
                 .body("data.availabilityPeriods.size()", equalTo(1))
+                .body("data.price", equalTo(121.2F))
+                .body("data.pricePerGuest", equalTo(true))
+                .body("data.availabilityPeriods.size()", equalTo(1))
                 .body("message", equalTo("Availability period successfully added"));
     }
 
+
     @Test
     @Order(5)
-    public void whenCreateAvailabilityPeriodWithInvalidDateRange_thenReturnBadRequest() {
-        String requestBody = "{" +
-                "\"startDate\": 1716242400000," +
-                "\"endDate\": 1716415200000," +
-                "\"accommodationId\": 1" +
+    public void whenChangeAvailabilityAndPriceInfo_thenReturnChangedAccommodation() {
+        String requestBody = "{\n" +
+                "    \"availabilityPeriod\": {" +
+                "        \"id\": 1," +
+                "        \"startDate\": 1714514400000," +
+                "        \"endDate\": 1717106400000," +
+                "        \"accommodationId\": 1," +
+                "        \"specialAccommodationPricePeriods\": [" +
+                "            {" +
+                "                \"startDate\": 1714687200000," +
+                "                \"endDate\": 1715119200000," +
+                "                \"price\": 211.32" +
+                "            }," +
+                "            {" +
+                "                \"startDate\": 1715896800000," +
+                "                \"endDate\": 1716156000000," +
+                "                \"price\": 158.32" +
+                "            }" +
+                "        ]" +
+                "    }," +
+                "    \"price\": 116.20," +
+                "    \"isPricePerGuest\": false," +
+                "    \"isAvailabilityPeriodBeingUpdated\": true" +
                 "}";
 
         doReturn(new GeneralResponse("host@gmail.com", "200"))
@@ -205,13 +240,67 @@ public class AccommodationControllerTests {
                 .header("Authorization", "Bearer good-jwt")
                 .body(requestBody)
         .when()
-                .post(createAvailabilityPeriod)
+                .post(changeAvailabilityAndPriceInfoEndpoint)
+        .then()
+                .statusCode(200)
+                .body("data.location.country", equalTo("Serbia"))
+                .body("data.location.city", equalTo("Subotica"))
+                .body("data.accommodationFeatures.size()", equalTo(2))
+                .body("data.photographs.size()", equalTo(3))
+                .body("data.minimumNoGuests", equalTo(1))
+                .body("data.maximumNoGuests", equalTo(10))
+                .body("data.hostEmail", equalTo("host@gmail.com"))
+                .body("data.availabilityPeriods.size()", equalTo(1))
+                .body("data.price", equalTo(116.2F))
+                .body("data.pricePerGuest", equalTo(false))
+                .body("data.availabilityPeriods.size()", equalTo(1))
+                .body("message", equalTo("Availability period successfully added"));
+    }
+
+    @Test
+    @Order(6)
+    public void whenCreateAvailabilityAndPriceInfoWithInvalidDates_thenReturnBadRequest() {
+        String requestBody = "{\n" +
+                "    \"availabilityPeriod\": {" +
+                "        \"id\": 1," +
+                "        \"startDate\": 1714514400000," +
+                "        \"endDate\": 1717106400000," +
+                "        \"accommodationId\": 1," +
+                "        \"specialAccommodationPricePeriods\": [" +
+                "            {" +
+                "                \"startDate\": 1714687200000," +
+                "                \"endDate\": 1715119200000," +
+                "                \"price\": 211.32" +
+                "            }," +
+                "            {" +
+                "                \"startDate\": 1715896800000," +
+                "                \"endDate\": 1716156000000," +
+                "                \"price\": 158.32" +
+                "            }" +
+                "        ]" +
+                "    }," +
+                "    \"price\": 116.20," +
+                "    \"isPricePerGuest\": false," +
+                "    \"isAvailabilityPeriodBeingUpdated\": false" +
+                "}";
+
+        doReturn(new GeneralResponse("host@gmail.com", "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                        "GET",
+                        "Bearer good-jwt");
+
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer good-jwt")
+                .body(requestBody)
+        .when()
+                .post(changeAvailabilityAndPriceInfoEndpoint)
         .then()
                 .statusCode(400)
                 .body("data", equalTo(""))
-                .body("message",equalTo("Provided dates aren't valid"));
+                .body("message", equalTo("Provided availability period dates aren't valid"));
     }
-
 
 }
 

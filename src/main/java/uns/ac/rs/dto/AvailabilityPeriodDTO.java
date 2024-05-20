@@ -1,7 +1,10 @@
 package uns.ac.rs.dto;
 
 import lombok.Data;
+import uns.ac.rs.model.AvailabilityPeriod;
+import uns.ac.rs.model.SpecialAccommodationPricePeriod;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -12,4 +15,22 @@ public class AvailabilityPeriodDTO {
     private long endDate;
     private long accommodationId;
     private List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods;
+
+    public AvailabilityPeriodDTO() {
+
+    }
+
+    public AvailabilityPeriodDTO(AvailabilityPeriod availabilityPeriod, long id) {
+        this.id = availabilityPeriod.getId();
+        this.startDate = availabilityPeriod.getStartDate();
+        this.accommodationId = id;
+        if (availabilityPeriod.getSpecialAccommodationPricePeriods() != null) {
+            List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods = new ArrayList<>();
+            for (SpecialAccommodationPricePeriod specialAccommodationPricePeriod: availabilityPeriod.getSpecialAccommodationPricePeriods()) {
+                specialAccommodationPricePeriods.add(new SpecialAccommodationPricePeriodDTO(specialAccommodationPricePeriod));
+            }
+            this.specialAccommodationPricePeriods = specialAccommodationPricePeriods;
+        }
+
+    }
 }
