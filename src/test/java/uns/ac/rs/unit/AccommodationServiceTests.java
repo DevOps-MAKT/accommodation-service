@@ -1,14 +1,13 @@
 package uns.ac.rs.unit;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uns.ac.rs.dto.*;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
+import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.model.*;
 import uns.ac.rs.repository.AccommodationFeatureRepository;
 import uns.ac.rs.repository.AccommodationRepository;
@@ -18,7 +17,6 @@ import uns.ac.rs.service.AccommodationService;
 import uns.ac.rs.service.AvailabilityPeriodService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,108 +74,67 @@ public class AccommodationServiceTests {
     }
 
     @Test
-    public void testCreateAvailabilityPeriod() {
+    public void testRetrieveAll() {
+        AccommodationFeature accommodationFeature = new AccommodationFeature("AC");
+        List<AccommodationFeature> accommodationFeatures = new ArrayList<>();
+        accommodationFeatures.add(accommodationFeature);
+        List<String> photographs = new ArrayList<>();
+        photographs.add("some-picture");
+        AccommodationRequestDTO accommodationRequestDTO = new AccommodationRequestDTO();
+        accommodationRequestDTO.setPhotographs(photographs);
+        accommodationRequestDTO.setMaximumNoGuests(5);
+        accommodationRequestDTO.setMinimumNoGuests(2);
+        Accommodation accommodation1 = new Accommodation(new Location("Subotica", "Serbia"), accommodationFeatures, accommodationRequestDTO, "someEmail");
+        accommodation1.setId(1L);
+        accommodation1.setPrice(12.02F);
+        accommodation1.setPricePerGuest(true);
+        Accommodation accommodation2 = new Accommodation(new Location("Novi Sad", "Serbia"), accommodationFeatures, accommodationRequestDTO, "someEmail");
+        accommodation2.setId(2L);
+        accommodation2.setPrice(13.02F);
+        accommodation2.setPricePerGuest(false);
+        List<Accommodation> accommodations = new ArrayList<>();
+        accommodations.add(accommodation1);
+        accommodations.add(accommodation2);
 
-        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
-        availabilityPeriodDTO.setStartDate(1716156000000L);
-        availabilityPeriodDTO.setEndDate(1716328800000L);
-        availabilityPeriodDTO.setAccommodationId(1L);
+        when(accommodationRepository.listAll()).thenReturn(accommodations);
 
-        AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO = new AdditionalAccommodationInfoDTO();
-        additionalAccommodationInfoDTO.setAvailabilityPeriod(availabilityPeriodDTO);
-        additionalAccommodationInfoDTO.setPrice(121.21F);
-        additionalAccommodationInfoDTO.setIsAvailabilityPeriodBeingUpdated(false);
-        additionalAccommodationInfoDTO.setIsPricePerGuest(true);
+        List<AccommodationResponseDTO> accommodationFeatureDTOS = accommodationService.filter("", "", 0, 0, 0);
 
-        Accommodation accommodation = new Accommodation();
-        List<AvailabilityPeriod> availabilityPeriods = new ArrayList<>();
-        accommodation.setAvailabilityPeriods(availabilityPeriods);
-        when(accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId())).thenReturn(accommodation);
-
-        Accommodation result = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
-
-        assertEquals(result.getAvailabilityPeriods().size(), 1);
-        verify(availabilityPeriodRepository).persist(any(AvailabilityPeriod.class));
-        verify(accommodationRepository).findById(availabilityPeriodDTO.getAccommodationId());
-        verify(accommodationRepository).persist(any(Accommodation.class));
+        assertEquals(accommodationFeatureDTOS.size(), 2);
     }
 
     @Test
-    void testAreAvailabilityPeriodDatesValid_NoOverlappingPeriods() {
+    public void testRetrieveByFilters() {
+        AccommodationFeature accommodationFeature = new AccommodationFeature("AC");
+        List<AccommodationFeature> accommodationFeatures = new ArrayList<>();
+        accommodationFeatures.add(accommodationFeature);
+        List<String> photographs = new ArrayList<>();
+        photographs.add("some-picture");
+        AccommodationRequestDTO accommodationRequestDTO = new AccommodationRequestDTO();
+        accommodationRequestDTO.setPhotographs(photographs);
+        accommodationRequestDTO.setMaximumNoGuests(5);
+        accommodationRequestDTO.setMinimumNoGuests(2);
+        Accommodation accommodation1 = new Accommodation(new Location("Subotica", "Serbia"), accommodationFeatures, accommodationRequestDTO, "someEmail");
+        accommodation1.setId(1L);
+        accommodation1.setPrice(12.02F);
+        accommodation1.setPricePerGuest(true);
+        Accommodation accommodation2 = new Accommodation(new Location("Novi Sad", "Serbia"), accommodationFeatures, accommodationRequestDTO, "someEmail");
+        accommodation2.setId(2L);
+        accommodation2.setPrice(13.02F);
+        accommodation2.setPricePerGuest(false);
+        List<Accommodation> accommodations = new ArrayList<>();
+        accommodations.add(accommodation1);
+        accommodations.add(accommodation2);
 
-        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
-        availabilityPeriodDTO.setStartDate(1000000000L);
-        availabilityPeriodDTO.setEndDate(2000000000L);
-        availabilityPeriodDTO.setAccommodationId(1L);
+        when(accommodationRepository.filter("location.id = 1 and minimumNoGuests <= 3 and maximumNoGuests >= 3  ")).thenReturn(accommodations);
+        Location location = new Location("Subotica", "Serbia");
+        location.setId(1L);
+        when(locationRepository.findByCityAndCountry("Subotica", "Serbia")).thenReturn(location);
 
-        Accommodation accommodation = new Accommodation();
-        accommodation.setAvailabilityPeriods(new ArrayList<>());
+        List<AccommodationResponseDTO> accommodationFeatureDTOS = accommodationService.filter("Serbia", "Subotica", 3, 0, 0);
 
-        when(accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId())).thenReturn(accommodation);
-
-        boolean result = availabilityPeriodService.areAvailabilityPeriodDatesValid(availabilityPeriodDTO);
-
-        assertTrue(result);
+        assertEquals(accommodationFeatureDTOS.size(), 2);
     }
 
-    @Test
-    void testAreAvailabilityPeriodDatesValid_OverlappingPeriods() {
 
-        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
-        availabilityPeriodDTO.setStartDate(1000000000L);
-        availabilityPeriodDTO.setEndDate(2000000000L);
-        availabilityPeriodDTO.setAccommodationId(1L);
-
-        Accommodation accommodation = new Accommodation();
-        AvailabilityPeriod overlappingPeriod = new AvailabilityPeriod();
-        overlappingPeriod.setStartDate(1500000000L);
-        overlappingPeriod.setEndDate(2500000000L);
-        accommodation.setAvailabilityPeriods(Collections.singletonList(overlappingPeriod));
-
-        when(accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId())).thenReturn(accommodation);
-
-        boolean result = availabilityPeriodService.areAvailabilityPeriodDatesValid(availabilityPeriodDTO);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testAreSpecialAccommodationPriceDatePeriodsValid_OverlappingPeriods() {
-
-        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
-        availabilityPeriodDTO.setStartDate(1000000000L);
-        availabilityPeriodDTO.setEndDate(2000000000L);
-        availabilityPeriodDTO.setAccommodationId(1L);
-
-        SpecialAccommodationPricePeriodDTO specialAccommodationPricePeriodDTO = new SpecialAccommodationPricePeriodDTO();
-        specialAccommodationPricePeriodDTO.setStartDate(2000000001L);
-        specialAccommodationPricePeriodDTO.setEndDate(2100000000L);
-        List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods = new ArrayList<>();
-        specialAccommodationPricePeriods.add(specialAccommodationPricePeriodDTO);
-        availabilityPeriodDTO.setSpecialAccommodationPricePeriods(specialAccommodationPricePeriods);
-
-        boolean result = availabilityPeriodService.areSpecialAccommodationPriceDatePeriodsValid(availabilityPeriodDTO);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testAreSpecialAccommodationPriceDatePeriodsValid_NoOverlappingPeriods() {
-
-        AvailabilityPeriodDTO availabilityPeriodDTO = new AvailabilityPeriodDTO();
-        availabilityPeriodDTO.setStartDate(1000000000L);
-        availabilityPeriodDTO.setEndDate(2000000000L);
-        availabilityPeriodDTO.setAccommodationId(1L);
-
-        SpecialAccommodationPricePeriodDTO specialAccommodationPricePeriodDTO = new SpecialAccommodationPricePeriodDTO();
-        specialAccommodationPricePeriodDTO.setStartDate(1200000000L);
-        specialAccommodationPricePeriodDTO.setEndDate(1400000000L);
-        List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods = new ArrayList<>();
-        specialAccommodationPricePeriods.add(specialAccommodationPricePeriodDTO);
-        availabilityPeriodDTO.setSpecialAccommodationPricePeriods(specialAccommodationPricePeriods);
-
-        boolean result = availabilityPeriodService.areSpecialAccommodationPriceDatePeriodsValid(availabilityPeriodDTO);
-
-        assertTrue(result);
-    }
 }

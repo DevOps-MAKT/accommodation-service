@@ -34,7 +34,7 @@ public class AvailabilityPeriodService {
         AvailabilityPeriodDTO availabilityPeriodDTO = additionalAccommodationInfoDTO.getAvailabilityPeriod();
         Accommodation accommodation = accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId());
 
-        if (accommodation.getAvailabilityPeriods().size() == 0) {
+        if (!additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()) {
             createAvailabilityPeriod(availabilityPeriodDTO, accommodation);
         }
         else {

@@ -23,6 +23,7 @@ public class AvailabilityPeriodDTO {
     public AvailabilityPeriodDTO(AvailabilityPeriod availabilityPeriod, long id) {
         this.id = availabilityPeriod.getId();
         this.startDate = availabilityPeriod.getStartDate();
+        this.endDate = availabilityPeriod.getEndDate();
         this.accommodationId = id;
         if (availabilityPeriod.getSpecialAccommodationPricePeriods() != null) {
             List<SpecialAccommodationPricePeriodDTO> specialAccommodationPricePeriods = new ArrayList<>();

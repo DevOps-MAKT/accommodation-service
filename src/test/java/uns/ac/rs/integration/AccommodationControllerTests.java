@@ -37,6 +37,14 @@ public class AccommodationControllerTests {
     @TestHTTPResource("change-availability-and-price-info")
     URL changeAvailabilityAndPriceInfoEndpoint;
 
+    @TestHTTPEndpoint(AccommodationController.class)
+    @TestHTTPResource("filter?country=Serbia&city=Subotica&noGuests=7&startDate=1715724000000&endDate=1715810400000")
+    URL filterWithValidArgumentsEndpoint;
+
+    @TestHTTPEndpoint(AccommodationController.class)
+    @TestHTTPResource("filter?country=Serbia&city=Subotica&noGuests=22&startDate=1715724000000&endDate=1715810400000")
+    URL filterWithInvalidArgumentsEndpoint;
+
     @InjectMock
     private MicroserviceCommunicator microserviceCommunicator;
 
@@ -300,6 +308,34 @@ public class AccommodationControllerTests {
                 .statusCode(400)
                 .body("data", equalTo(""))
                 .body("message", equalTo("Provided availability period dates aren't valid"));
+    }
+
+    @Test
+    @Order(7)
+    public void whenFilterAvailabilityPeriods_thenReturnAccommodationWithAvailabilityPeriodInRange() {
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer good-jwt")
+        .when()
+                .get(filterWithValidArgumentsEndpoint)
+        .then()
+                .statusCode(200)
+                .body("data.availabilityPeriods.size()", equalTo(1))
+                .body("message", equalTo("Successfully retrieved accommodations"));
+    }
+
+    @Test
+    @Order(8)
+    public void whenFilterAvailabilityPeriodsWithInvalidArguments_thenReturnNoAvailabilityPeriods() {
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer good-jwt")
+        .when()
+                .get(filterWithInvalidArgumentsEndpoint)
+        .then()
+                .statusCode(200)
+                .body("data.availabilityPeriods.size()", equalTo(0))
+                .body("message", equalTo("Successfully retrieved accommodations"));
     }
 
 }

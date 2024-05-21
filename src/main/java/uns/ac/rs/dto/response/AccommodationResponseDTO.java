@@ -48,4 +48,25 @@ public class AccommodationResponseDTO {
         this.isPricePerGuest = accommodation.isPricePerGuest();
         this.price = accommodation.getPrice();
     }
+
+    public AccommodationResponseDTO(Accommodation accommodation, List<AvailabilityPeriod> acceptedAvailabilityPeriods) {
+        this.id = accommodation.getId();
+        this.location = new LocationDTO(accommodation.getLocation());
+        List<AccommodationFeatureDTO> accommodationFeatureDTOS = new ArrayList<>();
+        for (AccommodationFeature accommodationFeature: accommodation.getFeatures()) {
+            accommodationFeatureDTOS.add(new AccommodationFeatureDTO(accommodationFeature));
+        }
+        this.accommodationFeatures = accommodationFeatureDTOS;
+        this.photographs = accommodation.getPhotographs();
+        this.minimumNoGuests = accommodation.getMinimumNoGuests();
+        this.maximumNoGuests = accommodation.getMaximumNoGuests();
+        this.hostEmail = accommodation.getHostEmail();
+        List<AvailabilityPeriodDTO> availabilityPeriods = new ArrayList<>();
+        for (AvailabilityPeriod availabilityPeriod: acceptedAvailabilityPeriods) {
+            availabilityPeriods.add(new AvailabilityPeriodDTO(availabilityPeriod, accommodation.getId()));
+        }
+        this.availabilityPeriods = availabilityPeriods;
+        this.isPricePerGuest = accommodation.isPricePerGuest();
+        this.price = accommodation.getPrice();
+    }
 }
