@@ -1,5 +1,6 @@
 package uns.ac.rs.controller;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -101,13 +102,16 @@ public class AccommodationController {
             }
         }
 
-        boolean areSpecialAccommodationPriceDatesValid = availabilityPeriodService
-                .areSpecialAccommodationPriceDatePeriodsValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
-        if (!areSpecialAccommodationPriceDatesValid) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new GeneralResponse<>("", "Provided special price dates aren't valid"))
-                    .build();
+        if (additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()) {
+            boolean areSpecialAccommodationPriceDatesValid = availabilityPeriodService
+                    .areSpecialAccommodationPriceDatePeriodsValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
+            if (!areSpecialAccommodationPriceDatesValid) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(new GeneralResponse<>("", "Provided special price dates aren't valid"))
+                        .build();
+            }
         }
+
         Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
 
         return Response
@@ -116,5 +120,21 @@ public class AccommodationController {
                             "Availability period successfully added"))
                 .build();
 
+    }
+
+    @GET
+    @Path("/filter")
+    @PermitAll
+    public Response filter(@QueryParam("country") String country,
+                           @QueryParam("city") String city,
+                           @QueryParam("noGuests") int noGuests,
+                           @QueryParam("startDate") long startDate,
+                           @QueryParam("endDate") long endDate) {
+
+        List<AccommodationResponseDTO> accommodationResponseDTOS = accommodationService.filter(country, city, noGuests, startDate, endDate);
+        return Response
+                .ok()
+                .entity(new GeneralResponse<>(accommodationResponseDTOS, "Successfully retrieved accommodations"))
+                .build();
     }
 }

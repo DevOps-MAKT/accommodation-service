@@ -16,4 +16,8 @@ public class AccommodationRepository implements PanacheRepository<Accommodation>
     public Accommodation findById(Long id) {
         return find("id = ?1", id).firstResult();
     }
+
+    public List<Accommodation> filter(String query) {
+        return list(query);
+    }
 }
