@@ -11,6 +11,7 @@ import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
+import uns.ac.rs.dto.response.ReservationResponseDTO;
 import uns.ac.rs.model.Accommodation;
 import uns.ac.rs.service.AccommodationService;
 import uns.ac.rs.service.AvailabilityPeriodService;
@@ -49,8 +50,9 @@ public class AccommodationController {
         }
 
         Accommodation accommodation = accommodationService.createAccommodation(accommodationDTO, userEmail);
+        List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
         return Response.status(Response.Status.CREATED)
-                .entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation),
+                .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservationResponseDTOS, accommodation),
                 "Accommodation successfully created"))
                 .build();
     }
@@ -70,7 +72,12 @@ public class AccommodationController {
         List<Accommodation> hostsAccommodations = accommodationService.getHostsAccommodations(userEmail);
         List<AccommodationResponseDTO> accommodationResponseDTOS = new ArrayList<>();
         for (Accommodation hostsAccommodation: hostsAccommodations) {
-            accommodationResponseDTOS.add(new AccommodationResponseDTO(hostsAccommodation));
+            GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
+                    "http://localhost:8003/reservation-service/reservation/" + hostsAccommodation.getId(),
+                    "GET",
+                    authorizationHeader);
+            List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
+            accommodationResponseDTOS.add(new AccommodationResponseDTO(reservations, hostsAccommodation));
         }
         return Response
                 .ok()
@@ -102,6 +109,14 @@ public class AccommodationController {
             }
         }
 
+        long accommodationId = additionalAccommodationInfoDTO.getAvailabilityPeriod().getAccommodationId();
+        GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
+                "http://localhost:8003/reservation-service/reservation/" + accommodationId,
+                "GET",
+                authorizationHeader);
+
+        List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
+
         if (additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()) {
             boolean areSpecialAccommodationPriceDatesValid = availabilityPeriodService
                     .areSpecialAccommodationPriceDatePeriodsValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
@@ -110,13 +125,21 @@ public class AccommodationController {
                         .entity(new GeneralResponse<>("", "Provided special price dates aren't valid"))
                         .build();
             }
+
+            boolean areTherePresentReservations = availabilityPeriodService
+                    .checkForReservations(additionalAccommodationInfoDTO.getAvailabilityPeriod(), reservations);
+            if (areTherePresentReservations) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(new GeneralResponse<>("", "Can't change availability period dates as there are present reservations"))
+                        .build();
+            }
         }
 
         Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
 
         return Response
                 .ok()
-                .entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation),
+                .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservations, accommodation),
                             "Availability period successfully added"))
                 .build();
 
@@ -132,6 +155,15 @@ public class AccommodationController {
                            @QueryParam("endDate") long endDate) {
 
         List<AccommodationResponseDTO> accommodationResponseDTOS = accommodationService.filter(country, city, noGuests, startDate, endDate);
+        for (AccommodationResponseDTO accommodation: accommodationResponseDTOS) {
+            GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
+                    "http://localhost:8003/reservation-service/reservation/" + accommodation.getId(),
+                    "GET",
+                    "");
+
+            List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
+            accommodation.setReservations(reservations);
+        }
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(accommodationResponseDTOS, "Successfully retrieved accommodations"))

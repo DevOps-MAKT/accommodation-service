@@ -24,9 +24,9 @@ public class AccommodationResponseDTO {
     private boolean isPricePerGuest;
     private float price;
     private List<AvailabilityPeriodDTO> availabilityPeriods;
+    private List<ReservationResponseDTO> reservations;
 
-
-    public AccommodationResponseDTO(Accommodation accommodation) {
+    public AccommodationResponseDTO(List<ReservationResponseDTO> reservationResponseDTOS, Accommodation accommodation) {
         this.id = accommodation.getId();
         this.location = new LocationDTO(accommodation.getLocation());
         List<AccommodationFeatureDTO> accommodationFeatureDTOS = new ArrayList<>();
@@ -41,6 +41,30 @@ public class AccommodationResponseDTO {
         if (accommodation.getAvailabilityPeriods() != null) {
             List<AvailabilityPeriodDTO> availabilityPeriods = new ArrayList<>();
             for (AvailabilityPeriod availabilityPeriod: accommodation.getAvailabilityPeriods()) {
+                availabilityPeriods.add(new AvailabilityPeriodDTO(availabilityPeriod, accommodation.getId()));
+            }
+            this.availabilityPeriods = availabilityPeriods;
+        }
+        this.isPricePerGuest = accommodation.isPricePerGuest();
+        this.price = accommodation.getPrice();
+        this.reservations = reservationResponseDTOS;
+    }
+
+    public AccommodationResponseDTO(Accommodation accommodation) {
+        this.id = accommodation.getId();
+        this.location = new LocationDTO(accommodation.getLocation());
+        List<AccommodationFeatureDTO> accommodationFeatureDTOS = new ArrayList<>();
+        for (AccommodationFeature accommodationFeature : accommodation.getFeatures()) {
+            accommodationFeatureDTOS.add(new AccommodationFeatureDTO(accommodationFeature));
+        }
+        this.accommodationFeatures = accommodationFeatureDTOS;
+        this.photographs = accommodation.getPhotographs();
+        this.minimumNoGuests = accommodation.getMinimumNoGuests();
+        this.maximumNoGuests = accommodation.getMaximumNoGuests();
+        this.hostEmail = accommodation.getHostEmail();
+        if (accommodation.getAvailabilityPeriods() != null) {
+            List<AvailabilityPeriodDTO> availabilityPeriods = new ArrayList<>();
+            for (AvailabilityPeriod availabilityPeriod : accommodation.getAvailabilityPeriods()) {
                 availabilityPeriods.add(new AvailabilityPeriodDTO(availabilityPeriod, accommodation.getId()));
             }
             this.availabilityPeriods = availabilityPeriods;
