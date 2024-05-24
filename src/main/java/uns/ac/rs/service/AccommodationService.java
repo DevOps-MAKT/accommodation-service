@@ -59,7 +59,6 @@ public class AccommodationService {
             String final_query = getFinalQuery(query);
             accommodations = accommodationRepository.filter(final_query);
         }
-        //TODO: Extend filter with reservations
         return checkAvailabilityPeriods(startDate, endDate, accommodations);
     }
 

@@ -26,7 +26,7 @@ public class MicroserviceCommunicator {
             connection.setRequestMethod(requestMethod);
 
             connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", authorizationHeader);
+            if (!authorizationHeader.isEmpty()) connection.setRequestProperty("Authorization", authorizationHeader);
 
             responseCode = connection.getResponseCode();
 

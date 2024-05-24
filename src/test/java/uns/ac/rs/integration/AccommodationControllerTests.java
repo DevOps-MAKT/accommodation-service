@@ -14,8 +14,11 @@ import org.junit.jupiter.api.TestMethodOrder;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.controller.AccommodationController;
+import uns.ac.rs.dto.response.ReservationResponseDTO;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -148,6 +151,13 @@ public class AccommodationControllerTests {
                         "GET",
                         "Bearer good-jwt");
 
+        List<ReservationResponseDTO> reservations = new ArrayList<>();
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8003/reservation-service/reservation/1",
+                        "GET",
+                        "Bearer good-jwt");
+
         given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
@@ -184,6 +194,13 @@ public class AccommodationControllerTests {
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
                 .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                        "GET",
+                        "Bearer good-jwt");
+
+        List<ReservationResponseDTO> reservations = new ArrayList<>();
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8003/reservation-service/reservation/1",
                         "GET",
                         "Bearer good-jwt");
 
@@ -240,6 +257,13 @@ public class AccommodationControllerTests {
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
                 .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                        "GET",
+                        "Bearer good-jwt");
+
+        List<ReservationResponseDTO> reservations = new ArrayList<>();
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8003/reservation-service/reservation/1",
                         "GET",
                         "Bearer good-jwt");
 
@@ -313,6 +337,14 @@ public class AccommodationControllerTests {
     @Test
     @Order(7)
     public void whenFilterAvailabilityPeriods_thenReturnAccommodationWithAvailabilityPeriodInRange() {
+
+        List<ReservationResponseDTO> reservations = new ArrayList<>();
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8003/reservation-service/reservation/1",
+                        "GET",
+                        "");
+
         given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
@@ -327,6 +359,13 @@ public class AccommodationControllerTests {
     @Test
     @Order(8)
     public void whenFilterAvailabilityPeriodsWithInvalidArguments_thenReturnNoAvailabilityPeriods() {
+
+        List<ReservationResponseDTO> reservations = new ArrayList<>();
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8001/reservation-service/reservation/1",
+                        "GET",
+                        "Bearer good-jwt");
         given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
