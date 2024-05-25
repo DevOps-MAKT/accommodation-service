@@ -126,7 +126,7 @@ public class AccommodationServiceTests {
         accommodations.add(accommodation1);
         accommodations.add(accommodation2);
 
-        when(accommodationRepository.filter("location.id = 1 and minimumNoGuests <= 3 and maximumNoGuests >= 3  ")).thenReturn(accommodations);
+        when(accommodationRepository.filter("location.id = 1 and minimumNoGuests <= 3 and maximumNoGuests >= 3 and terminated = false")).thenReturn(accommodations);
         Location location = new Location("Subotica", "Serbia");
         location.setId(1L);
         when(locationRepository.findByCityAndCountry("Subotica", "Serbia")).thenReturn(location);

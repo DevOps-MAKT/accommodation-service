@@ -62,6 +62,19 @@ public class AccommodationService {
         return checkAvailabilityPeriods(startDate, endDate, accommodations);
     }
 
+    public boolean deactivateHostsAccommodations(String email) {
+        try {
+            List<Accommodation> accommodations = accommodationRepository.findByHostEmail(email);
+            for (Accommodation accommodation: accommodations) {
+                accommodation.setTerminated(true);
+            }
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
     private List<AccommodationResponseDTO> checkAvailabilityPeriods(long startDate, long endDate, List<Accommodation> accommodations) {
         List<AccommodationResponseDTO> accommodationResponseDTOS = new ArrayList<>();
         for (Accommodation accommodation: accommodations) {
@@ -97,10 +110,8 @@ public class AccommodationService {
     }
 
     private String getFinalQuery(String query) {
-        String and = "and";
-        int lastOccurrenceOfAnd = query.lastIndexOf(and);
-        return query.substring(0, lastOccurrenceOfAnd) +
-                query.substring(lastOccurrenceOfAnd + and.length());
+        query += "terminated = false";
+        return query;
     }
 
     private String getNoGuestsQuery(int noGuests, String query) {

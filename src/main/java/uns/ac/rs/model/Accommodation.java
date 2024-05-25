@@ -52,6 +52,9 @@ public class Accommodation {
     @Column(name = "is_price_per_guest")
     private boolean isPricePerGuest;
 
+    @Column(name = "terminated")
+    private boolean terminated;
+
 
     public Accommodation(Location location, List<AccommodationFeature> accommodationFeatures, AccommodationRequestDTO accommodationDTO, String hostEmail) {
         this.location = location;
@@ -60,6 +63,7 @@ public class Accommodation {
         this.minimumNoGuests = accommodationDTO.getMinimumNoGuests();
         this.maximumNoGuests = accommodationDTO.getMaximumNoGuests();
         this.hostEmail = hostEmail;
+        this.terminated = false;
     }
 
     public Accommodation() {
