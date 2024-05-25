@@ -1,6 +1,7 @@
 package uns.ac.rs.controller;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -167,6 +168,20 @@ public class AccommodationController {
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(accommodationResponseDTOS, "Successfully retrieved accommodations"))
+                .build();
+    }
+
+    @PATCH
+    @Path("/deactivate-hosts-accommodations/{email}")
+    @RolesAllowed("host")
+    public Response deactivateHostsAccommodations(@PathParam("email") String email,
+                                                  @HeaderParam("Authorization") String authorizationHeader) {
+        boolean successfulAccommodationDeactivation = accommodationService.deactivateHostsAccommodations(email);
+        return Response
+                .ok()
+                .entity(new GeneralResponse<>(successfulAccommodationDeactivation,
+                        "Deactivation of hosts accommodations complete")
+                )
                 .build();
     }
 }

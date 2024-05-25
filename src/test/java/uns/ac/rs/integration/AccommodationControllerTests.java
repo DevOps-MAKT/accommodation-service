@@ -48,6 +48,10 @@ public class AccommodationControllerTests {
     @TestHTTPResource("filter?country=Serbia&city=Subotica&noGuests=22&startDate=1715724000000&endDate=1715810400000")
     URL filterWithInvalidArgumentsEndpoint;
 
+    @TestHTTPEndpoint(AccommodationController.class)
+    @TestHTTPResource("deactivate-hosts-accommodations/host@gmail.com")
+    URL deactivateHostsAccommodationsEndpoint;
+
     @InjectMock
     private MicroserviceCommunicator microserviceCommunicator;
 
@@ -359,7 +363,6 @@ public class AccommodationControllerTests {
     @Test
     @Order(8)
     public void whenFilterAvailabilityPeriodsWithInvalidArguments_thenReturnNoAvailabilityPeriods() {
-
         List<ReservationResponseDTO> reservations = new ArrayList<>();
         doReturn(new GeneralResponse(reservations, "200"))
                 .when(microserviceCommunicator)
@@ -375,6 +378,21 @@ public class AccommodationControllerTests {
                 .statusCode(200)
                 .body("data.availabilityPeriods.size()", equalTo(0))
                 .body("message", equalTo("Successfully retrieved accommodations"));
+    }
+
+    @Test
+    @Order(9)
+    public void whenDeactivateHost_thenTerminateAccommodations() {
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer good-jwt")
+        .when()
+                .patch(deactivateHostsAccommodationsEndpoint)
+        .then()
+                .statusCode(200)
+                .body("data", equalTo(true))
+                .body("message", equalTo("Deactivation of hosts accommodations complete"));
+
     }
 
 }
