@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uns.ac.rs.dto.AvailabilityPeriodDTO;
+import uns.ac.rs.dto.MinAccommodationDTO;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
@@ -73,6 +74,15 @@ public class AccommodationService {
         catch (Exception e) {
             return false;
         }
+    }
+
+    public List<MinAccommodationDTO> retrieveMinAccommodations() {
+        List<MinAccommodationDTO> minAccommodationDTOS = new ArrayList<>();
+        List<Accommodation> accommodations = accommodationRepository.listAll();
+        for (Accommodation accommodation: accommodations) {
+            minAccommodationDTOS.add(new MinAccommodationDTO(accommodation.getId(), accommodation.getName()));
+        }
+        return minAccommodationDTOS;
     }
 
     private List<AccommodationResponseDTO> checkAvailabilityPeriods(long startDate, long endDate, List<Accommodation> accommodations) {

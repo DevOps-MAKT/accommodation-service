@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
+import uns.ac.rs.dto.MinAccommodationDTO;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
@@ -182,6 +183,17 @@ public class AccommodationController {
                 .entity(new GeneralResponse<>(successfulAccommodationDeactivation,
                         "Deactivation of hosts accommodations complete")
                 )
+                .build();
+    }
+
+    @GET
+    @Path("/retrieve-min-accommodations")
+    @PermitAll
+    public Response retrieveAccommodations() {
+        List<MinAccommodationDTO> minAccommodationDTOS = accommodationService.retrieveMinAccommodations();
+        return Response
+                .ok()
+                .entity(new GeneralResponse<>(minAccommodationDTOS, "Successfully retrieved names of accommodations"))
                 .build();
     }
 }

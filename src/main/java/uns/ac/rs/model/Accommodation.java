@@ -15,6 +15,9 @@ public class Accommodation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name")
+    private String name;
+
     @ManyToOne
     @JoinColumn(name="location_id")
     private Location location;
@@ -64,6 +67,7 @@ public class Accommodation {
         this.maximumNoGuests = accommodationDTO.getMaximumNoGuests();
         this.hostEmail = hostEmail;
         this.terminated = false;
+        this.name = accommodationDTO.getName();
     }
 
     public Accommodation() {

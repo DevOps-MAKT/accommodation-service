@@ -15,6 +15,7 @@ import java.util.List;
 public class AccommodationResponseDTO {
     private long id;
 
+    private String name;
     private LocationDTO location;
     private List<AccommodationFeatureDTO> accommodationFeatures;
     private List<String> photographs;
@@ -27,6 +28,7 @@ public class AccommodationResponseDTO {
     private List<ReservationResponseDTO> reservations;
 
     public AccommodationResponseDTO(List<ReservationResponseDTO> reservationResponseDTOS, Accommodation accommodation) {
+        this.name = accommodation.getName();
         this.id = accommodation.getId();
         this.location = new LocationDTO(accommodation.getLocation());
         List<AccommodationFeatureDTO> accommodationFeatureDTOS = new ArrayList<>();
@@ -51,6 +53,7 @@ public class AccommodationResponseDTO {
     }
 
     public AccommodationResponseDTO(Accommodation accommodation) {
+        this.name = accommodation.getName();
         this.id = accommodation.getId();
         this.location = new LocationDTO(accommodation.getLocation());
         List<AccommodationFeatureDTO> accommodationFeatureDTOS = new ArrayList<>();
@@ -74,6 +77,7 @@ public class AccommodationResponseDTO {
     }
 
     public AccommodationResponseDTO(Accommodation accommodation, List<AvailabilityPeriod> acceptedAvailabilityPeriods) {
+        this.name = accommodation.getName();
         this.id = accommodation.getId();
         this.location = new LocationDTO(accommodation.getLocation());
         List<AccommodationFeatureDTO> accommodationFeatureDTOS = new ArrayList<>();
