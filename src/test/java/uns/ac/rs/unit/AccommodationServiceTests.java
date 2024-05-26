@@ -17,6 +17,7 @@ import uns.ac.rs.service.AccommodationService;
 import uns.ac.rs.service.AvailabilityPeriodService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -135,6 +136,27 @@ public class AccommodationServiceTests {
 
         assertEquals(accommodationFeatureDTOS.size(), 2);
     }
+
+    @Test
+    public void testRetrieveMinAccommodations() {
+        Accommodation accommodation1 = new Accommodation();
+        accommodation1.setId(1L);
+        accommodation1.setName("Accommodation 1");
+        Accommodation accommodation2 = new Accommodation();
+        accommodation2.setId(2L);
+        accommodation2.setName("Accommodation 2");
+        when(accommodationRepository.listAll()).thenReturn(Arrays.asList(accommodation1, accommodation2));
+
+        List<MinAccommodationDTO> minAccommodations = accommodationService.retrieveMinAccommodations();
+
+        assertNotNull(minAccommodations);
+        assertEquals(2, minAccommodations.size());
+        assertEquals(1L, minAccommodations.get(0).getId());
+        assertEquals("Accommodation 1", minAccommodations.get(0).getName());
+        assertEquals(2L, minAccommodations.get(1).getId());
+        assertEquals("Accommodation 2", minAccommodations.get(1).getName());
+    }
+
 
 
 }

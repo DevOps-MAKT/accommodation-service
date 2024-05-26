@@ -52,6 +52,10 @@ public class AccommodationControllerTests {
     @TestHTTPResource("deactivate-hosts-accommodations/host@gmail.com")
     URL deactivateHostsAccommodationsEndpoint;
 
+    @TestHTTPEndpoint(AccommodationController.class)
+    @TestHTTPResource("retrieve-min-accommodations")
+    URL retrieveMinAccommodationEndpoint;
+
     @InjectMock
     private MicroserviceCommunicator microserviceCommunicator;
 
@@ -82,7 +86,8 @@ public class AccommodationControllerTests {
                     "\"url3\"" +
                 "]," +
                 "\"minimumNoGuests\": 0," +
-                "\"maximumNoGuests\": 10" +
+                "\"maximumNoGuests\": 10," +
+                "\"name\": \"accommodation-name\"" +
                 "}";
 
         given()
@@ -125,7 +130,8 @@ public class AccommodationControllerTests {
                 "\"url3\"" +
                 "]," +
                 "\"minimumNoGuests\": 1," +
-                "\"maximumNoGuests\": 10" +
+                "\"maximumNoGuests\": 10," +
+                "\"name\": \"accommodation-name\"" +
                 "}";
 
         given()
@@ -143,6 +149,7 @@ public class AccommodationControllerTests {
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
+                .body("data.name", equalTo("accommodation-name"))
                 .body("message", equalTo("Accommodation successfully created"));
     }
 
@@ -393,6 +400,20 @@ public class AccommodationControllerTests {
                 .body("data", equalTo(true))
                 .body("message", equalTo("Deactivation of hosts accommodations complete"));
 
+    }
+
+    @Test
+    @Order(10)
+    public void whenRetrieveMinAccommodations_thenReturnMinInfo() {
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer good-jwt")
+        .when()
+                .get(retrieveMinAccommodationEndpoint)
+        .then()
+                .statusCode(200)
+                .body("data.size()", equalTo(1))
+                .body("message", equalTo("Successfully retrieved names of accommodations"));
     }
 
 }
