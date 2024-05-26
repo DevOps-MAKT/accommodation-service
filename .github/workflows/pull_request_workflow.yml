@@ -1,13 +1,9 @@
 name: "[ACCOMMODATION SERVICE] PR Workflow"
 on:
-  push:
-    branches:
-      - 'feature/workflows-setup'
-      - 'develop'
-#  pull_request:
-#    types: [ opened, reopened, synchronize ]
-#    paths:
-#      - '.github/workflows/**'
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    paths:
+      - '.github/workflows/**'
 
 jobs:
   tests:
