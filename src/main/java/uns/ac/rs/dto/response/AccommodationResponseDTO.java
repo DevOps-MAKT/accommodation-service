@@ -26,6 +26,7 @@ public class AccommodationResponseDTO {
     private float price;
     private List<AvailabilityPeriodDTO> availabilityPeriods;
     private List<ReservationResponseDTO> reservations;
+    private float avgRating;
 
     public AccommodationResponseDTO(List<ReservationResponseDTO> reservationResponseDTOS, Accommodation accommodation) {
         this.name = accommodation.getName();
