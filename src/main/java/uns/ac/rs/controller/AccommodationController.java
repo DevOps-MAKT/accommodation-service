@@ -165,6 +165,15 @@ public class AccommodationController {
 
             List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
             accommodation.setReservations(reservations);
+
+            GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
+                    "http://localhost:8001/user-service/avg-rating/" + accommodation.getName(),
+                    "GET",
+                    ""
+            );
+
+            float avgRating = (float) ratingResponse.getData();
+            accommodation.setAvgRating(avgRating);
         }
         return Response
                 .ok()

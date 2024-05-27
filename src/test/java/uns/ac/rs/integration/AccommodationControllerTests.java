@@ -356,6 +356,12 @@ public class AccommodationControllerTests {
                         "GET",
                         "");
 
+        doReturn(new GeneralResponse(3.2f, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8001/user-service/avg-rating/accommodation-name",
+                        "GET",
+                        "");
+
         given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
@@ -376,6 +382,11 @@ public class AccommodationControllerTests {
                 .processResponse("http://localhost:8001/reservation-service/reservation/1",
                         "GET",
                         "Bearer good-jwt");
+        doReturn(new GeneralResponse(3.2f, "200"))
+                .when(microserviceCommunicator)
+                .processResponse("http://localhost:8001/user-service/avg-rating/accommodation-name",
+                        "GET",
+                        "");
         given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
