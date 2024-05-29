@@ -405,7 +405,7 @@ public class AccommodationControllerTests {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
         .when()
-                .patch(deactivateHostsAccommodationsEndpoint)
+                .delete(deactivateHostsAccommodationsEndpoint)
         .then()
                 .statusCode(200)
                 .body("data", equalTo(true))
