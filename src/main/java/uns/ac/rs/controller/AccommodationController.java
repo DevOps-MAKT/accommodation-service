@@ -186,7 +186,7 @@ public class AccommodationController {
                 .build();
     }
 
-    @PATCH
+    @DELETE
     @Path("/deactivate-hosts-accommodations/{email}")
     @RolesAllowed("host")
     public Response deactivateHostsAccommodations(@PathParam("email") String email,
