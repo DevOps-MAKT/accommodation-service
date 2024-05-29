@@ -20,6 +20,7 @@ import uns.ac.rs.service.AvailabilityPeriodService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Path("/accommodation")
 @RequestScoped
@@ -71,16 +72,20 @@ public class AccommodationController {
         if (userEmail.equals("")) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
-        List<Accommodation> hostsAccommodations = accommodationService.getHostsAccommodations(userEmail);
+
+        Optional<List<Accommodation>> hostsAccommodations = accommodationService.getHostsAccommodations(userEmail);
         List<AccommodationResponseDTO> accommodationResponseDTOS = new ArrayList<>();
-        for (Accommodation hostsAccommodation: hostsAccommodations) {
-            GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
-                    "http://localhost:8003/reservation-service/reservation/" + hostsAccommodation.getId(),
-                    "GET",
-                    authorizationHeader);
-            List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
-            accommodationResponseDTOS.add(new AccommodationResponseDTO(reservations, hostsAccommodation));
+        if (hostsAccommodations.isPresent()) {
+            for (Accommodation hostsAccommodation: hostsAccommodations.get()) {
+                GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
+                        "http://localhost:8003/reservation-service/reservation/" + hostsAccommodation.getId(),
+                        "GET",
+                        authorizationHeader);
+                List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
+                accommodationResponseDTOS.add(new AccommodationResponseDTO(reservations, hostsAccommodation));
+            }
         }
+
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(accommodationResponseDTOS,

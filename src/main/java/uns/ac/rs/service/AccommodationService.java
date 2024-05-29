@@ -3,7 +3,6 @@ package uns.ac.rs.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uns.ac.rs.dto.AvailabilityPeriodDTO;
 import uns.ac.rs.dto.MinAccommodationDTO;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
@@ -18,6 +17,7 @@ import uns.ac.rs.repository.LocationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -46,7 +46,7 @@ public class AccommodationService {
         return accommodation;
     }
 
-    public List<Accommodation> getHostsAccommodations(String hostEmail) {
+    public Optional<List<Accommodation>> getHostsAccommodations(String hostEmail) {
         return accommodationRepository.findByHostEmail(hostEmail);
     }
 
@@ -65,9 +65,11 @@ public class AccommodationService {
 
     public boolean deactivateHostsAccommodations(String email) {
         try {
-            List<Accommodation> accommodations = accommodationRepository.findByHostEmail(email);
-            for (Accommodation accommodation: accommodations) {
-                accommodation.setTerminated(true);
+            Optional<List<Accommodation>> accommodations = accommodationRepository.findByHostEmail(email);
+            if (accommodations.isPresent()) {
+                for (Accommodation accommodation: accommodations.get()) {
+                    accommodation.setTerminated(true);
+                }
             }
             return true;
         }
