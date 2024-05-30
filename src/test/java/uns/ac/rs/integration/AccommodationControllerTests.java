@@ -70,17 +70,12 @@ public class AccommodationControllerTests {
                         "GET",
                         "Bearer fake-jwt");
 
-        AccommodationForm form = new AccommodationForm();
-        form.location = "Subotica, Serbia";
-        form.features = "Kitchen,AC";
-        form.fileName = "dummyFileName.jpg";
         byte[] fileContent = "dummyImageContent".getBytes();
-        form.file = new ByteArrayInputStream(fileContent);
 
         given()
                 .contentType("multipart/form-data")
                 .multiPart("location", "Subotica, Serbia")
-                .multiPart("features", "Kitchen,AC")
+                .multiPart("tags", "Kitchen,AC")
                 .multiPart("fileName", "dummyFileName.jpg")
                 .multiPart("file", "dummyFileName.jpg", fileContent, "image/jpeg")
                 .header("Authorization", "Bearer fake-jwt")
@@ -101,33 +96,20 @@ public class AccommodationControllerTests {
                 .processResponse("http://localhost:8001/user-service/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
-        String requestBody = "{" +
-                "\"location\": {" +
-                "\"country\": \"Serbia\"," +
-                "\"city\": \"Subotica\"" +
-                "}," +
-                "\"accommodationFeatures\": [" +
-                "{" +
-                "\"feature\": \"Kitchen\"" +
-                "}," +
-                "{" +
-                "\"feature\": \"AC\"" +
-                "}" +
-                "]," +
-                "\"photographs\": [" +
-                "\"url1\"," +
-                "\"url2\"," +
-                "\"url3\"" +
-                "]," +
-                "\"minimumNoGuests\": 1," +
-                "\"maximumNoGuests\": 10," +
-                "\"name\": \"accommodation-name\"" +
-                "}";
+
+        byte[] fileContent = "dummyImageContent".getBytes();
 
         given()
-                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
-                .body(requestBody)
+                .contentType("multipart/form-data")
+                .multiPart("location", "Subotica, Serbia")
+                .multiPart("tags", "Kitchen,AC")
+                .multiPart("fileName", "dummyFileName.jpg")
+                .multiPart("name", "some-accommodation")
+                .multiPart("minGuests", "1")
+                .multiPart("maxGuests", "10")
+                .multiPart("file", "dummyFileName.jpg", fileContent, "image/jpeg")
+                .header("Authorization", "Bearer fake-jwt")
         .when()
                 .post(createAccommodationEndpoint)
         .then()
@@ -135,11 +117,11 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographs.size()", equalTo(3))
+                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
-                .body("data.name", equalTo("accommodation-name"))
+                .body("data.name", equalTo("some-accommodation"))
                 .body("message", equalTo("Accommodation successfully created"));
     }
 
@@ -216,7 +198,7 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographs.size()", equalTo(3))
+                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
@@ -279,7 +261,7 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographs.size()", equalTo(3))
+                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
@@ -348,7 +330,7 @@ public class AccommodationControllerTests {
 
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/user/avg-rating/accommodation-name",
+                .processResponse("http://localhost:8001/user-service/user/avg-rating/some-accommodation",
                         "GET",
                         "");
 
@@ -374,7 +356,7 @@ public class AccommodationControllerTests {
                         "Bearer good-jwt");
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/avg-rating/accommodation-name",
+                .processResponse("http://localhost:8001/user-service/user/avg-rating/accommodation-name",
                         "GET",
                         "");
         given()
