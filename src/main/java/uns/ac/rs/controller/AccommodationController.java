@@ -6,21 +6,27 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.MultipartForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.MinAccommodationDTO;
-import uns.ac.rs.dto.request.AccommodationRequestDTO;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
 import uns.ac.rs.model.Accommodation;
 import uns.ac.rs.service.AccommodationService;
 import uns.ac.rs.service.AvailabilityPeriodService;
+import uns.ac.rs.service.PhotographService;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Path("/accommodation")
 @RequestScoped
@@ -37,10 +43,14 @@ public class AccommodationController {
     @Autowired
     private AvailabilityPeriodService availabilityPeriodService;
 
+    @Autowired
+    private PhotographService photographService;
+
 
     @POST
     @Path("/create")
-    public Response createAccommodation(@HeaderParam("Authorization") String authorizationHeader, AccommodationRequestDTO accommodationDTO) {
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response createAccommodation(@HeaderParam("Authorization") String authorizationHeader, @MultipartForm AccommodationForm form) {
         // #TODO load the URL based on the env
         GeneralResponse response = microserviceCommunicator.processResponse(
                 "http://localhost:8001/user-service/auth/authorize/host",
@@ -51,13 +61,17 @@ public class AccommodationController {
         if (userEmail.equals("")) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
-
-        Accommodation accommodation = accommodationService.createAccommodation(accommodationDTO, userEmail);
-        List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
-        return Response.status(Response.Status.CREATED)
-                .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservationResponseDTOS, accommodation),
-                "Accommodation successfully created"))
-                .build();
+        try (InputStream input = form.file) {
+            String imageFileName = photographService.save(input, form.fileName);
+            Accommodation accommodation = accommodationService.createAccommodation(form, userEmail, imageFileName);
+            List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
+            return Response.status(Response.Status.CREATED)
+                    .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservationResponseDTOS, accommodation),
+                    "Accommodation successfully created"))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error creating accommodation").build();
+        }
     }
 
     @GET

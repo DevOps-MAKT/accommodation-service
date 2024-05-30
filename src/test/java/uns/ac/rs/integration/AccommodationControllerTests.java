@@ -14,8 +14,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.controller.AccommodationController;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
 
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,33 +69,21 @@ public class AccommodationControllerTests {
                 .processResponse("http://localhost:8001/user-service/auth/authorize/host",
                         "GET",
                         "Bearer fake-jwt");
-        String requestBody = "{" +
-                "\"location\": {" +
-                    "\"country\": \"Serbia\"," +
-                    "\"city\": \"Subotica\"" +
-                "}," +
-                "\"accommodationFeatures\": [" +
-                    "{" +
-                        "\"feature\": \"Kitchen\"" +
-                    "}," +
-                    "{" +
-                        "\"feature\": \"AC\"" +
-                    "}" +
-                "]," +
-                "\"photographs\": [" +
-                    "\"url1\"," +
-                    "\"url2\"," +
-                    "\"url3\"" +
-                "]," +
-                "\"minimumNoGuests\": 0," +
-                "\"maximumNoGuests\": 10," +
-                "\"name\": \"accommodation-name\"" +
-                "}";
+
+        AccommodationForm form = new AccommodationForm();
+        form.location = "Subotica, Serbia";
+        form.features = "Kitchen,AC";
+        form.fileName = "dummyFileName.jpg";
+        byte[] fileContent = "dummyImageContent".getBytes();
+        form.file = new ByteArrayInputStream(fileContent);
 
         given()
-                .contentType(ContentType.JSON)
+                .contentType("multipart/form-data")
+                .multiPart("location", "Subotica, Serbia")
+                .multiPart("features", "Kitchen,AC")
+                .multiPart("fileName", "dummyFileName.jpg")
+                .multiPart("file", "dummyFileName.jpg", fileContent, "image/jpeg")
                 .header("Authorization", "Bearer fake-jwt")
-                .body(requestBody)
         .when()
                 .post(createAccommodationEndpoint)
         .then()

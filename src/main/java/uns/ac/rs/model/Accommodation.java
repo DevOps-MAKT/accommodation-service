@@ -3,6 +3,7 @@ package uns.ac.rs.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 
 import java.util.List;
@@ -30,10 +31,8 @@ public class Accommodation {
     )
     private List<AccommodationFeature> features;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "accommodation_photographs", joinColumns = @JoinColumn(name = "accommodation_id"))
-    @Column(name = "photographs")
-    private List<String> photographs;
+    @Column(name = "photograph_url")
+    private String photographURL;
 
     @Column(name = "minimum_no_guests")
     @Min(value = 1)
@@ -62,7 +61,7 @@ public class Accommodation {
     public Accommodation(Location location, List<AccommodationFeature> accommodationFeatures, AccommodationRequestDTO accommodationDTO, String hostEmail) {
         this.location = location;
         this.features = accommodationFeatures;
-        this.photographs = accommodationDTO.getPhotographs();
+        this.photographURL = "";
         this.minimumNoGuests = accommodationDTO.getMinimumNoGuests();
         this.maximumNoGuests = accommodationDTO.getMaximumNoGuests();
         this.hostEmail = hostEmail;
@@ -72,5 +71,16 @@ public class Accommodation {
 
     public Accommodation() {
 
+    }
+
+    public Accommodation(Location location, List<AccommodationFeature> accommodationFeatures, AccommodationForm form, String hostEmail, String imagePath) {
+        this.location = location;
+        this.features = accommodationFeatures;
+        this.photographURL = "";
+        this.minimumNoGuests = form.minimumNoGuests;
+        this.maximumNoGuests = form.maximumNoGuests;
+        this.hostEmail = hostEmail;
+        this.terminated = false;
+        this.name = form.name;
     }
 }
