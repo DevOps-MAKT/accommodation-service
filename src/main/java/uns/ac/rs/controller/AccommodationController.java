@@ -172,7 +172,7 @@ public class AccommodationController {
             accommodation.setReservations(reservations);
 
             GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
-                    "http://localhost:8001/user-service/avg-rating/" + accommodation.getName(),
+                    "http://localhost:8001/user-service/user/avg-rating/" + accommodation.getName(),
                     "GET",
                     ""
             );
