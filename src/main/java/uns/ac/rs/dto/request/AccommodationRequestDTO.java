@@ -12,7 +12,6 @@ public class AccommodationRequestDTO {
     private String name;
     private LocationDTO location;
     private List<AccommodationFeatureDTO> accommodationFeatures;
-    private List<String> photographs;
     private int minimumNoGuests;
     private int maximumNoGuests;
 

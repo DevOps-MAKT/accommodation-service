@@ -1,9 +1,11 @@
 package uns.ac.rs.service;
 
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uns.ac.rs.dto.MinAccommodationDTO;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
@@ -32,15 +34,15 @@ public class AccommodationService {
     @Autowired
     private LocationRepository locationRepository;
 
-    public Accommodation createAccommodation(AccommodationRequestDTO accommodationDTO, String hostEmail) {
-        Location location = locationRepository.findByCityAndCountry(accommodationDTO.getLocation().getCity(), accommodationDTO.getLocation().getCountry());
+    public Accommodation createAccommodation(AccommodationForm form, String hostEmail, String imagePath) {
+        Location location = locationRepository.findByCityAndCountry(form.location.split(", ")[0], form.location.split(", ")[1]);
 
         List<AccommodationFeature> accommodationFeatures = new ArrayList<>();
-        for (AccommodationFeatureDTO accommodationFeatureDTO: accommodationDTO.getAccommodationFeatures()) {
-            accommodationFeatures.add(accommodationFeatureRepository.findByFeature(accommodationFeatureDTO.getFeature()));
+        for (String feature: form.features.split(",")) {
+            accommodationFeatures.add(accommodationFeatureRepository.findByFeature(feature));
         }
 
-        Accommodation accommodation = new Accommodation(location, accommodationFeatures, accommodationDTO, hostEmail);
+        Accommodation accommodation = new Accommodation(location, accommodationFeatures, form, hostEmail, imagePath);
         accommodationRepository.persist(accommodation);
 
         return accommodation;
@@ -139,5 +141,11 @@ public class AccommodationService {
             query += "location.id = " + location.getId() + " and ";
         }
         return query;
+    }
+
+    public void update(Long accommodationId, String photographURL) {
+        Accommodation accommodation = accommodationRepository.findById(accommodationId);
+        accommodation.setPhotographURL(photographURL);
+        accommodationRepository.persist(accommodation);
     }
 }

@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uns.ac.rs.dto.*;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.model.*;
@@ -46,13 +47,11 @@ public class AccommodationServiceTests {
 
     @Test
     public void testCreateAccommodation() {
-        AccommodationRequestDTO accommodationDTO = new AccommodationRequestDTO();
-        accommodationDTO.setLocation(new LocationDTO("Serbia", "Subotica"));
-        List<AccommodationFeatureDTO> accommodationFeaturesDTO = new ArrayList<>();
-        accommodationFeaturesDTO.add(new AccommodationFeatureDTO("Feature1"));
-        accommodationFeaturesDTO.add(new AccommodationFeatureDTO("Feature2"));
-        accommodationDTO.setAccommodationFeatures(accommodationFeaturesDTO);
+        AccommodationForm form = new AccommodationForm();
+        form.location = "Subotica, Serbia";
+        form.features = "Feature1,Feature2";
         String userEmail = "test@example.com";
+        String imagePath = "testImagePath";
 
         Location mockLocation = new Location("Subotica", "Serbia");
         when(locationRepository.findByCityAndCountry("Subotica", "Serbia")).thenReturn(mockLocation);
@@ -62,7 +61,7 @@ public class AccommodationServiceTests {
         when(accommodationFeatureRepository.findByFeature("Feature1")).thenReturn(mockFeature1);
         when(accommodationFeatureRepository.findByFeature("Feature2")).thenReturn(mockFeature2);
 
-        Accommodation result = accommodationService.createAccommodation(accommodationDTO, userEmail);
+        Accommodation result = accommodationService.createAccommodation(form, userEmail, imagePath);
 
         assertEquals("Subotica", result.getLocation().getCity());
         assertEquals("Serbia", result.getLocation().getCountry());
@@ -79,10 +78,7 @@ public class AccommodationServiceTests {
         AccommodationFeature accommodationFeature = new AccommodationFeature("AC");
         List<AccommodationFeature> accommodationFeatures = new ArrayList<>();
         accommodationFeatures.add(accommodationFeature);
-        List<String> photographs = new ArrayList<>();
-        photographs.add("some-picture");
         AccommodationRequestDTO accommodationRequestDTO = new AccommodationRequestDTO();
-        accommodationRequestDTO.setPhotographs(photographs);
         accommodationRequestDTO.setMaximumNoGuests(5);
         accommodationRequestDTO.setMinimumNoGuests(2);
         Accommodation accommodation1 = new Accommodation(new Location("Subotica", "Serbia"), accommodationFeatures, accommodationRequestDTO, "someEmail");
@@ -109,10 +105,7 @@ public class AccommodationServiceTests {
         AccommodationFeature accommodationFeature = new AccommodationFeature("AC");
         List<AccommodationFeature> accommodationFeatures = new ArrayList<>();
         accommodationFeatures.add(accommodationFeature);
-        List<String> photographs = new ArrayList<>();
-        photographs.add("some-picture");
         AccommodationRequestDTO accommodationRequestDTO = new AccommodationRequestDTO();
-        accommodationRequestDTO.setPhotographs(photographs);
         accommodationRequestDTO.setMaximumNoGuests(5);
         accommodationRequestDTO.setMinimumNoGuests(2);
         Accommodation accommodation1 = new Accommodation(new Location("Subotica", "Serbia"), accommodationFeatures, accommodationRequestDTO, "someEmail");
