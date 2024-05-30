@@ -358,7 +358,7 @@ public class AccommodationControllerTests {
 
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/avg-rating/accommodation-name",
+                .processResponse("http://localhost:8001/user-service/user/avg-rating/accommodation-name",
                         "GET",
                         "");
 
