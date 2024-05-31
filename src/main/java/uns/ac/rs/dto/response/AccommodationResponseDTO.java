@@ -20,7 +20,7 @@ public class AccommodationResponseDTO {
     private String name;
     private LocationDTO location;
     private List<AccommodationFeatureDTO> accommodationFeatures;
-    private List<String> photographs;
+    private String photographURL;
     private int minimumNoGuests;
     private int maximumNoGuests;
     private String hostEmail;
@@ -39,7 +39,7 @@ public class AccommodationResponseDTO {
             accommodationFeatureDTOS.add(new AccommodationFeatureDTO(accommodationFeature));
         }
         this.accommodationFeatures = accommodationFeatureDTOS;
-        this.photographs = accommodation.getPhotographs();
+        this.photographURL = accommodation.getPhotographURL();
         this.minimumNoGuests = accommodation.getMinimumNoGuests();
         this.maximumNoGuests = accommodation.getMaximumNoGuests();
         this.hostEmail = accommodation.getHostEmail();
@@ -64,7 +64,7 @@ public class AccommodationResponseDTO {
             accommodationFeatureDTOS.add(new AccommodationFeatureDTO(accommodationFeature));
         }
         this.accommodationFeatures = accommodationFeatureDTOS;
-        this.photographs = accommodation.getPhotographs();
+        this.photographURL = accommodation.getPhotographURL();
         this.minimumNoGuests = accommodation.getMinimumNoGuests();
         this.maximumNoGuests = accommodation.getMaximumNoGuests();
         this.hostEmail = accommodation.getHostEmail();
@@ -88,7 +88,7 @@ public class AccommodationResponseDTO {
             accommodationFeatureDTOS.add(new AccommodationFeatureDTO(accommodationFeature));
         }
         this.accommodationFeatures = accommodationFeatureDTOS;
-        this.photographs = accommodation.getPhotographs();
+        this.photographURL = accommodation.getPhotographURL();
         this.minimumNoGuests = accommodation.getMinimumNoGuests();
         this.maximumNoGuests = accommodation.getMaximumNoGuests();
         this.hostEmail = accommodation.getHostEmail();

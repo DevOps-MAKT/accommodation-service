@@ -17,8 +17,10 @@ import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.config.IntegrationConfig;
 import uns.ac.rs.controller.AccommodationController;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
 
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,33 +75,16 @@ public class AccommodationControllerTests {
                 .processResponse(config.userServiceAPI() + "/auth/authorize/host",
                         "GET",
                         "Bearer fake-jwt");
-        String requestBody = "{" +
-                "\"location\": {" +
-                    "\"country\": \"Serbia\"," +
-                    "\"city\": \"Subotica\"" +
-                "}," +
-                "\"accommodationFeatures\": [" +
-                    "{" +
-                        "\"feature\": \"Kitchen\"" +
-                    "}," +
-                    "{" +
-                        "\"feature\": \"AC\"" +
-                    "}" +
-                "]," +
-                "\"photographs\": [" +
-                    "\"url1\"," +
-                    "\"url2\"," +
-                    "\"url3\"" +
-                "]," +
-                "\"minimumNoGuests\": 0," +
-                "\"maximumNoGuests\": 10," +
-                "\"name\": \"accommodation-name\"" +
-                "}";
+
+        byte[] fileContent = "dummyImageContent".getBytes();
 
         given()
-                .contentType(ContentType.JSON)
+                .contentType("multipart/form-data")
+                .multiPart("location", "Subotica, Serbia")
+                .multiPart("tags", "Kitchen,AC")
+                .multiPart("fileName", "dummyFileName.jpg")
+                .multiPart("file", "dummyFileName.jpg", fileContent, "image/jpeg")
                 .header("Authorization", "Bearer fake-jwt")
-                .body(requestBody)
         .when()
                 .post(createAccommodationEndpoint)
         .then()
@@ -117,33 +102,20 @@ public class AccommodationControllerTests {
                 .processResponse(config.userServiceAPI() + "/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
-        String requestBody = "{" +
-                "\"location\": {" +
-                "\"country\": \"Serbia\"," +
-                "\"city\": \"Subotica\"" +
-                "}," +
-                "\"accommodationFeatures\": [" +
-                "{" +
-                "\"feature\": \"Kitchen\"" +
-                "}," +
-                "{" +
-                "\"feature\": \"AC\"" +
-                "}" +
-                "]," +
-                "\"photographs\": [" +
-                "\"url1\"," +
-                "\"url2\"," +
-                "\"url3\"" +
-                "]," +
-                "\"minimumNoGuests\": 1," +
-                "\"maximumNoGuests\": 10," +
-                "\"name\": \"accommodation-name\"" +
-                "}";
+
+        byte[] fileContent = "dummyImageContent".getBytes();
 
         given()
-                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer good-jwt")
-                .body(requestBody)
+                .contentType("multipart/form-data")
+                .multiPart("location", "Subotica, Serbia")
+                .multiPart("tags", "Kitchen,AC")
+                .multiPart("fileName", "dummyFileName.jpg")
+                .multiPart("name", "some-accommodation")
+                .multiPart("minGuests", "1")
+                .multiPart("maxGuests", "10")
+                .multiPart("file", "dummyFileName.jpg", fileContent, "image/jpeg")
+                .header("Authorization", "Bearer fake-jwt")
         .when()
                 .post(createAccommodationEndpoint)
         .then()
@@ -151,11 +123,11 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographs.size()", equalTo(3))
+                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
-                .body("data.name", equalTo("accommodation-name"))
+                .body("data.name", equalTo("some-accommodation"))
                 .body("message", equalTo("Accommodation successfully created"));
     }
 
@@ -232,7 +204,7 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographs.size()", equalTo(3))
+                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
@@ -295,7 +267,7 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographs.size()", equalTo(3))
+                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
@@ -364,7 +336,7 @@ public class AccommodationControllerTests {
 
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse(config.userServiceAPI() + "/avg-rating/accommodation-name",
+                .processResponse(config.userServiceAPI() + "/user/avg-rating/some-accommodation",
                         "GET",
                         "");
 
@@ -390,7 +362,7 @@ public class AccommodationControllerTests {
                         "Bearer good-jwt");
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse(config.userServiceAPI() + "/avg-rating/accommodation-name",
+                .processResponse(config.userServiceAPI() + "/user/avg-rating/accommodation-name",
                         "GET",
                         "");
         given()

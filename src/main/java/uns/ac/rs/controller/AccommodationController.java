@@ -9,19 +9,22 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.jboss.resteasy.reactive.MultipartForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.config.IntegrationConfig;
 import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.MinAccommodationDTO;
-import uns.ac.rs.dto.request.AccommodationRequestDTO;
+import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
 import uns.ac.rs.model.Accommodation;
 import uns.ac.rs.service.AccommodationService;
 import uns.ac.rs.service.AvailabilityPeriodService;
+import uns.ac.rs.service.PhotographService;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +47,15 @@ public class AccommodationController {
     @Inject
     private IntegrationConfig config;
 
+
+    @Autowired
+    private PhotographService photographService;
+
+
     @POST
     @Path("/create")
-    public Response createAccommodation(@HeaderParam("Authorization") String authorizationHeader, AccommodationRequestDTO accommodationDTO) {
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response createAccommodation(@HeaderParam("Authorization") String authorizationHeader, @MultipartForm AccommodationForm form) {
         GeneralResponse response = microserviceCommunicator.processResponse(
                 config.userServiceAPI() + "/auth/authorize/host",
                 "GET",
@@ -58,14 +67,18 @@ public class AccommodationController {
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
 
-        Accommodation accommodation = accommodationService.createAccommodation(accommodationDTO, userEmail);
-        List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
-
-        logger.info("Accommodation successfully created");
-        return Response.status(Response.Status.CREATED)
-                .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservationResponseDTOS, accommodation),
-                "Accommodation successfully created"))
-                .build();
+        try (InputStream input = form.file) {
+            String imageFileName = photographService.save(input, form.fileName);
+            Accommodation accommodation = accommodationService.createAccommodation(form, userEmail, imageFileName);
+            List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
+            logger.info("Accommodation successfully created");
+            return Response.status(Response.Status.CREATED)
+                    .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservationResponseDTOS, accommodation),
+                    "Accommodation successfully created"))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error creating accommodation").build();
+        }
     }
 
     @GET
@@ -178,7 +191,7 @@ public class AccommodationController {
             accommodation.setReservations(reservations);
 
             GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
-                    config.userServiceAPI() + "/avg-rating/" + accommodation.getName(),
+                    config.userServiceAPI() + "/user/avg-rating/" + accommodation.getName(),
                     "GET",
                     ""
             );
