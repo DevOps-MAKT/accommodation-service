@@ -14,7 +14,7 @@ public class PhotographService {
     private static String uploadDirectory = "src/main/resources/images";
 
     public String save(InputStream file, String fileName) throws IOException {
-        String imageFileName = UUID.randomUUID().toString() + "_" + fileName;
+        String imageFileName = UUID.randomUUID().toString() + "_" + fileName.replace(' ', '_');
         Files.copy(file, Paths.get(uploadDirectory, imageFileName));
         return imageFileName;
     }
