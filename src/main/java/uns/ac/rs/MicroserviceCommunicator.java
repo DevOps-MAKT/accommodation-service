@@ -1,6 +1,8 @@
 package uns.ac.rs;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.net.URL;
 
 @ApplicationScoped
 public class MicroserviceCommunicator {
+    private static final Logger logger = LoggerFactory.getLogger(MicroserviceCommunicator.class);
 
     public GeneralResponse processResponse(String apiUrl, String requestMethod, String authorizationHeader) {
         return this.sendRequest(apiUrl, requestMethod, authorizationHeader);
@@ -40,6 +43,7 @@ public class MicroserviceCommunicator {
             connection.disconnect();
 
         } catch (IOException e) {
+            logger.error("Service integration failed: {}", e.getMessage());
             return new GeneralResponse<>("", String.valueOf(responseCode));
         }
         return new GeneralResponse<>(response.toString());

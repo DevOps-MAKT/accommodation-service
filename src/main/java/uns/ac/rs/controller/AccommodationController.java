@@ -3,13 +3,17 @@ package uns.ac.rs.controller;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jboss.resteasy.reactive.MultipartForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
+import uns.ac.rs.config.IntegrationConfig;
 import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.MinAccommodationDTO;
 import uns.ac.rs.dto.request.AccommodationForm;
@@ -21,19 +25,16 @@ import uns.ac.rs.service.AvailabilityPeriodService;
 import uns.ac.rs.service.PhotographService;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Path("/accommodation")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AccommodationController {
-
+    private static final Logger logger = LoggerFactory.getLogger(AccommodationController.class);
     @Autowired
     private AccommodationService accommodationService;
 
@@ -43,6 +44,10 @@ public class AccommodationController {
     @Autowired
     private AvailabilityPeriodService availabilityPeriodService;
 
+    @Inject
+    private IntegrationConfig config;
+
+
     @Autowired
     private PhotographService photographService;
 
@@ -51,20 +56,22 @@ public class AccommodationController {
     @Path("/create")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response createAccommodation(@HeaderParam("Authorization") String authorizationHeader, @MultipartForm AccommodationForm form) {
-        // #TODO load the URL based on the env
         GeneralResponse response = microserviceCommunicator.processResponse(
-                "http://localhost:8001/user-service/auth/authorize/host",
+                config.userServiceAPI() + "/auth/authorize/host",
                 "GET",
                 authorizationHeader);
 
         String userEmail = (String) response.getData();
         if (userEmail.equals("")) {
+            logger.warn("Unauthorized access for create accommodation");
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
+
         try (InputStream input = form.file) {
             String imageFileName = photographService.save(input, form.fileName);
             Accommodation accommodation = accommodationService.createAccommodation(form, userEmail, imageFileName);
             List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
+            logger.info("Accommodation successfully created");
             return Response.status(Response.Status.CREATED)
                     .entity(new GeneralResponse<>(new AccommodationResponseDTO(reservationResponseDTOS, accommodation),
                     "Accommodation successfully created"))
@@ -77,13 +84,13 @@ public class AccommodationController {
     @GET
     @Path("/my-accommodations")
     public Response getAccommodationsFromHost(@HeaderParam("Authorization") String authorizationHeader) {
-        // #TODO load the URL based on the env
         GeneralResponse response = microserviceCommunicator.processResponse(
-                "http://localhost:8001/user-service/auth/authorize/host",
-                "GET",
+                config.userServiceAPI() + "/auth/authorize/host",
+                HttpMethod.GET,
                 authorizationHeader);
         String userEmail = (String) response.getData();
         if (userEmail.equals("")) {
+            logger.warn("Unauthorized access for host's accommodation");
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
 
@@ -92,27 +99,25 @@ public class AccommodationController {
         if (hostsAccommodations.isPresent()) {
             for (Accommodation hostsAccommodation: hostsAccommodations.get()) {
                 GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
-                        "http://localhost:8003/reservation-service/reservation/" + hostsAccommodation.getId(),
+                        config.reservationServiceAPI() + "/reservation/" + hostsAccommodation.getId(),
                         "GET",
                         authorizationHeader);
                 List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
                 accommodationResponseDTOS.add(new AccommodationResponseDTO(reservations, hostsAccommodation));
             }
         }
-
+        logger.info("Host's accommodations successfully retrieved");
         return Response
                 .ok()
-                .entity(new GeneralResponse<>(accommodationResponseDTOS,
-                        "Host's accommodations successfully retrieved"))
+                .entity(new GeneralResponse<>(accommodationResponseDTOS, "Host's accommodations successfully retrieved"))
                 .build();
     }
 
     @POST
     @Path("/change-availability-and-price-info")
     public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
-        // #TODO load the URL based on the env
         GeneralResponse response = microserviceCommunicator.processResponse(
-                "http://localhost:8001/user-service/auth/authorize/host",
+                config.userServiceAPI() + "/auth/authorize/host",
                 "GET",
                 authorizationHeader);
 
@@ -132,7 +137,7 @@ public class AccommodationController {
 
         long accommodationId = additionalAccommodationInfoDTO.getAvailabilityPeriod().getAccommodationId();
         GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
-                "http://localhost:8003/reservation-service/reservation/" + accommodationId,
+                config.reservationServiceAPI() + "/reservation/" + accommodationId,
                 "GET",
                 authorizationHeader);
 
@@ -178,7 +183,7 @@ public class AccommodationController {
         List<AccommodationResponseDTO> accommodationResponseDTOS = accommodationService.filter(country, city, noGuests, startDate, endDate);
         for (AccommodationResponseDTO accommodation: accommodationResponseDTOS) {
             GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
-                    "http://localhost:8003/reservation-service/reservation/" + accommodation.getId(),
+                    config.reservationServiceAPI() + "/reservation/" + accommodation.getId(),
                     "GET",
                     "");
 
@@ -186,7 +191,7 @@ public class AccommodationController {
             accommodation.setReservations(reservations);
 
             GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
-                    "http://localhost:8001/user-service/user/avg-rating/" + accommodation.getName(),
+                    config.userServiceAPI() + "/user/avg-rating/" + accommodation.getName(),
                     "GET",
                     ""
             );

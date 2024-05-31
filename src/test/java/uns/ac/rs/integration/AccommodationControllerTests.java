@@ -7,12 +7,15 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
 import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
+import uns.ac.rs.config.IntegrationConfig;
 import uns.ac.rs.controller.AccommodationController;
 import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
@@ -61,12 +64,15 @@ public class AccommodationControllerTests {
     @InjectMock
     private MicroserviceCommunicator microserviceCommunicator;
 
+    @Autowired
+    private IntegrationConfig config;
+
     @Test
     @Order(1)
     public void whenCreateAccommodationWithoutAuthorization_thenReturnUnauthorized() {
         doReturn(new GeneralResponse("", "401"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                .processResponse(config.userServiceAPI() + "/auth/authorize/host",
                         "GET",
                         "Bearer fake-jwt");
 
@@ -93,7 +99,7 @@ public class AccommodationControllerTests {
     public void whenCreateAccommodationWithAuthorization_thenReturnCreatedWithAccommodation() {
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                .processResponse(config.userServiceAPI() + "/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
 
@@ -130,7 +136,7 @@ public class AccommodationControllerTests {
     public void whenGetAccommodationsForHost_thenReturnHostsAccommodations() {
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                .processResponse(config.userServiceAPI() + "/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
 
@@ -176,7 +182,7 @@ public class AccommodationControllerTests {
 
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                .processResponse(config.userServiceAPI()+ "/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
 
@@ -239,14 +245,14 @@ public class AccommodationControllerTests {
 
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                .processResponse(config.userServiceAPI()+ "/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
 
         List<ReservationResponseDTO> reservations = new ArrayList<>();
         doReturn(new GeneralResponse(reservations, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8003/reservation-service/reservation/1",
+                .processResponse(config.reservationServiceAPI() + "/reservation/1",
                         "GET",
                         "Bearer good-jwt");
 
@@ -301,7 +307,7 @@ public class AccommodationControllerTests {
 
         doReturn(new GeneralResponse("host@gmail.com", "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/auth/authorize/host",
+                .processResponse(config.userServiceAPI() + "/auth/authorize/host",
                         "GET",
                         "Bearer good-jwt");
 
@@ -324,13 +330,13 @@ public class AccommodationControllerTests {
         List<ReservationResponseDTO> reservations = new ArrayList<>();
         doReturn(new GeneralResponse(reservations, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8003/reservation-service/reservation/1",
+                .processResponse(config.reservationServiceAPI() + "/reservation/1",
                         "GET",
                         "");
 
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/user/avg-rating/some-accommodation",
+                .processResponse(config.userServiceAPI() + "/user/avg-rating/some-accommodation",
                         "GET",
                         "");
 
@@ -351,12 +357,12 @@ public class AccommodationControllerTests {
         List<ReservationResponseDTO> reservations = new ArrayList<>();
         doReturn(new GeneralResponse(reservations, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/reservation-service/reservation/1",
+                .processResponse(config.reservationServiceAPI() + "/reservation/1",
                         "GET",
                         "Bearer good-jwt");
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8001/user-service/user/avg-rating/accommodation-name",
+                .processResponse(config.userServiceAPI() + "/user/avg-rating/accommodation-name",
                         "GET",
                         "");
         given()
