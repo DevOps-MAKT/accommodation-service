@@ -1,5 +1,6 @@
 package uns.ac.rs.dto.response;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Data;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
 import uns.ac.rs.dto.AvailabilityPeriodDTO;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@RegisterForReflection
 public class AccommodationResponseDTO {
     private long id;
 

@@ -1,9 +1,11 @@
 package uns.ac.rs.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Data;
 import uns.ac.rs.model.SpecialAccommodationPricePeriod;
 
 @Data
+@RegisterForReflection
 public class SpecialAccommodationPricePeriodDTO {
     private long startDate;
     private long endDate;

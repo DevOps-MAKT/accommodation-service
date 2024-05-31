@@ -1,5 +1,6 @@
 package uns.ac.rs.dto.request;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Data;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
 import uns.ac.rs.dto.LocationDTO;
@@ -7,6 +8,7 @@ import uns.ac.rs.dto.LocationDTO;
 import java.util.List;
 
 @Data
+@RegisterForReflection
 public class AccommodationRequestDTO {
 
     private String name;

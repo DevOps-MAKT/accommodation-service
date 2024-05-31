@@ -1,5 +1,6 @@
 package uns.ac.rs.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Data;
 import uns.ac.rs.model.AvailabilityPeriod;
 import uns.ac.rs.model.SpecialAccommodationPricePeriod;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@RegisterForReflection
 public class AvailabilityPeriodDTO {
 
     private long id;
