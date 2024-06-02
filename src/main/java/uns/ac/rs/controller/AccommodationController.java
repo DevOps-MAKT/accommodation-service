@@ -27,6 +27,7 @@ import uns.ac.rs.service.PhotographService;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Path("/accommodation")
@@ -68,7 +69,15 @@ public class AccommodationController {
         }
 
         try (InputStream input = form.file) {
+            logger.info("Saving provided photograph");
             String imageFileName = photographService.save(input, form.fileName);
+            if (Objects.equals(imageFileName, "")) {
+                logger.warn("Photograph has not been saved successfully");
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(new GeneralResponse<>("", "Error while saving the picture")).build();
+            }
+
+            logger.info("Creating accommodation");
             Accommodation accommodation = accommodationService.createAccommodation(form, userEmail, imageFileName);
             List<ReservationResponseDTO> reservationResponseDTOS = new ArrayList<>();
             logger.info("Accommodation successfully created");
@@ -77,6 +86,7 @@ public class AccommodationController {
                     "Accommodation successfully created"))
                     .build();
         } catch (Exception e) {
+            logger.error("Unsuccessful accommodation creation: {}", e.toString());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error creating accommodation").build();
         }
     }
@@ -89,6 +99,7 @@ public class AccommodationController {
                 HttpMethod.GET,
                 authorizationHeader);
         String userEmail = (String) response.getData();
+        logger.info("Retrieving accommodations for host with email {}", userEmail);
         if (userEmail.equals("")) {
             logger.warn("Unauthorized access for host's accommodation");
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
@@ -123,12 +134,15 @@ public class AccommodationController {
 
         String userEmail = (String) response.getData();
         if (userEmail.equals("")) {
+            logger.warn("Unauthorized access for host's accommodation");
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
 
+        logger.info("Checking whether availability period dates are valid");
         if (!additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()){
             boolean areAvailabilityDatesValid = availabilityPeriodService.areAvailabilityPeriodDatesValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
             if (!areAvailabilityDatesValid) {
+                logger.warn("Provided availability period dates are not valid");
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(new GeneralResponse<>("", "Provided availability period dates aren't valid"))
                         .build();
@@ -136,17 +150,19 @@ public class AccommodationController {
         }
 
         long accommodationId = additionalAccommodationInfoDTO.getAvailabilityPeriod().getAccommodationId();
+        logger.info("Retrieving reservations for provided accommodation");
         GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
                 config.reservationServiceAPI() + "/reservation/" + accommodationId,
                 "GET",
                 authorizationHeader);
 
         List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
-
+        logger.info("Successfully retrieved reservations for provided accommodation");
         if (additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()) {
             boolean areSpecialAccommodationPriceDatesValid = availabilityPeriodService
                     .areSpecialAccommodationPriceDatePeriodsValid(additionalAccommodationInfoDTO.getAvailabilityPeriod());
             if (!areSpecialAccommodationPriceDatesValid) {
+                logger.warn("Provided special accommodation price dates are not valid");
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(new GeneralResponse<>("", "Provided special price dates aren't valid"))
                         .build();
@@ -155,13 +171,16 @@ public class AccommodationController {
             boolean areTherePresentReservations = availabilityPeriodService
                     .checkForReservations(additionalAccommodationInfoDTO.getAvailabilityPeriod(), reservations);
             if (areTherePresentReservations) {
+                logger.warn("There are present reservations in the given date period");
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(new GeneralResponse<>("", "Can't change availability period dates as there are present reservations"))
                         .build();
             }
         }
 
+        logger.info("Changing the availability period");
         Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
+        logger.info("Successfully changed the availability period");
 
         return Response
                 .ok()
@@ -180,7 +199,11 @@ public class AccommodationController {
                            @QueryParam("startDate") long startDate,
                            @QueryParam("endDate") long endDate) {
 
+        logger.info("Filtering accommodations");
         List<AccommodationResponseDTO> accommodationResponseDTOS = accommodationService.filter(country, city, noGuests, startDate, endDate);
+        logger.info("Initial filtering performed");
+
+        logger.info("Retrieving reservations and average rating for accommodations");
         for (AccommodationResponseDTO accommodation: accommodationResponseDTOS) {
             GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
                     config.reservationServiceAPI() + "/reservation/" + accommodation.getId(),
@@ -210,7 +233,9 @@ public class AccommodationController {
     @RolesAllowed("host")
     public Response deactivateHostsAccommodations(@PathParam("email") String email,
                                                   @HeaderParam("Authorization") String authorizationHeader) {
+        logger.info("Deactivating accommodations for user with email {}", email);
         boolean successfulAccommodationDeactivation = accommodationService.deactivateHostsAccommodations(email);
+        logger.info("Successfully deactivated accommodations for user with email {}", email);
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(successfulAccommodationDeactivation,
@@ -223,7 +248,9 @@ public class AccommodationController {
     @Path("/retrieve-min-accommodations")
     @PermitAll
     public Response retrieveAccommodations() {
+        logger.info("Retrieving basic accommodation info");
         List<MinAccommodationDTO> minAccommodationDTOS = accommodationService.retrieveMinAccommodations();
+        logger.info("Successfully retrieved basic accommodation info");
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(minAccommodationDTOS, "Successfully retrieved names of accommodations"))
