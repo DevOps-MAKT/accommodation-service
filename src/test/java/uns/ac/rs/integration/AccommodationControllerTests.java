@@ -143,7 +143,7 @@ public class AccommodationControllerTests {
         List<ReservationResponseDTO> reservations = new ArrayList<>();
         doReturn(new GeneralResponse(reservations, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8003/reservation-service/reservation/1",
+                .processResponse(config.reservationServiceAPI() + "/reservation/1",
                         "GET",
                         "Bearer good-jwt");
 
@@ -189,7 +189,7 @@ public class AccommodationControllerTests {
         List<ReservationResponseDTO> reservations = new ArrayList<>();
         doReturn(new GeneralResponse(reservations, "200"))
                 .when(microserviceCommunicator)
-                .processResponse("http://localhost:8003/reservation-service/reservation/1",
+                .processResponse(config.reservationServiceAPI()+ "/reservation/1",
                         "GET",
                         "Bearer good-jwt");
 
