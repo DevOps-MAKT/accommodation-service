@@ -126,7 +126,7 @@ public class AccommodationController {
 
     @POST
     @Path("/change-availability-and-price-info")
-    public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
+    public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditiofetchingnalAccommodationInfoDTO additionalAccommodationInfoDTO) {
         GeneralResponse response = microserviceCommunicator.processResponse(
                 config.userServiceAPI() + "/auth/authorize/host",
                 "GET",
@@ -254,6 +254,38 @@ public class AccommodationController {
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(minAccommodationDTOS, "Successfully retrieved names of accommodations"))
+                .build();
+    }
+
+    @GET
+    @Path("/{id}")
+    @PermitAll
+    public Response getAccommodation(@PathParam("id") Long id) {
+        logger.info("Retrieving accommodation info");
+        AccommodationResponseDTO accommodation = accommodationService.getById(id);
+
+        logger.info("Retrieving reservations and average rating for accommodation");
+        GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
+                    config.reservationServiceAPI() + "/reservation/" + accommodation.getId(),
+                    "GET",
+                    "");
+
+        List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
+        accommodation.setReservations(reservations);
+
+        GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
+                    config.userServiceAPI() + "/user/avg-rating/" + accommodation.getId(),
+                    "GET",
+                    ""
+        );
+
+        Double doubleRating = (Double) ratingResponse.getData();
+        float avgRating = doubleRating.floatValue();
+        accommodation.setAvgRating(avgRating);
+
+        return Response
+                .ok()
+                .entity(new GeneralResponse<>(accommodation, "Successfully retrieved accommodation"))
                 .build();
     }
 }
