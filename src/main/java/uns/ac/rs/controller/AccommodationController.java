@@ -16,6 +16,7 @@ import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.config.IntegrationConfig;
 import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.MinAccommodationDTO;
+import uns.ac.rs.dto.PriceInfoDTO;
 import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
@@ -125,7 +126,7 @@ public class AccommodationController {
     }
 
     @POST
-    @Path("/change-availability-and-price-info")
+    @Path("/change-availability-info")
     public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
         GeneralResponse response = microserviceCommunicator.processResponse(
                 config.userServiceAPI() + "/auth/authorize/host",
@@ -179,7 +180,7 @@ public class AccommodationController {
         }
 
         logger.info("Changing the availability period");
-        Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
+        Accommodation accommodation = availabilityPeriodService.changeAvailabilityPeriod(additionalAccommodationInfoDTO);
         logger.info("Successfully changed the availability period");
 
         return Response
@@ -287,5 +288,32 @@ public class AccommodationController {
                 .ok()
                 .entity(new GeneralResponse<>(accommodation, "Successfully retrieved accommodation"))
                 .build();
+    }
+
+    @PATCH
+    @Path("/update-price-info")
+    @RolesAllowed("host")
+    public Response updatePriceInfo(@HeaderParam("Authorization") String authorizationHeader, PriceInfoDTO priceInfoDTO) {
+        GeneralResponse response = microserviceCommunicator.processResponse(
+                config.userServiceAPI() + "/auth/authorize/host",
+                "GET",
+                authorizationHeader);
+
+        String userEmail = (String) response.getData();
+        if (userEmail.equals("")) {
+            logger.warn("Unauthorized access for host's accommodation");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
+        }
+        try {
+            Accommodation accommodation = accommodationService.updatePriceInfo(priceInfoDTO);
+            return Response
+                    .ok()
+                    .entity(new GeneralResponse<>(new AccommodationResponseDTO(accommodation),
+                            "Successfully updated accommodation price info"))
+                    .build();
+        } catch (Exception e) {
+            logger.error("Error while updating price info: {}", e.getLocalizedMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error updating price info").build();
+        }
     }
 }

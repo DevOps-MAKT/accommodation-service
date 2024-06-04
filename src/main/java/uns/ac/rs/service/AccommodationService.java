@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uns.ac.rs.dto.MinAccommodationDTO;
+import uns.ac.rs.dto.PriceInfoDTO;
 import uns.ac.rs.dto.request.AccommodationForm;
 import uns.ac.rs.dto.request.AccommodationRequestDTO;
 import uns.ac.rs.dto.AccommodationFeatureDTO;
@@ -118,6 +119,20 @@ public class AccommodationService {
         }
         return accommodationResponseDTOS;
     }
+    public void update(Long accommodationId, String photographURL) {
+        Accommodation accommodation = accommodationRepository.findById(accommodationId);
+        accommodation.setPhotographURL(photographURL);
+        accommodationRepository.persist(accommodation);
+    }
+
+    public Accommodation updatePriceInfo(PriceInfoDTO priceInfoDTO) {
+        Accommodation accommodation = accommodationRepository.findById(priceInfoDTO.getAccommodationId());
+        accommodation.setPricePerGuest(priceInfoDTO.isPricePerGuest());
+        accommodation.setPrice(priceInfoDTO.getPrice());
+        accommodationRepository.persist(accommodation);
+        return accommodation;
+    }
+
 
     private List<AvailabilityPeriod> deepCopyAvailabilityPeriods(List<AvailabilityPeriod> availabilityPeriods) {
         return new ArrayList<>(availabilityPeriods);
@@ -145,11 +160,5 @@ public class AccommodationService {
             query += "location.id = " + location.getId() + " and ";
         }
         return query;
-    }
-
-    public void update(Long accommodationId, String photographURL) {
-        Accommodation accommodation = accommodationRepository.findById(accommodationId);
-        accommodation.setPhotographURL(photographURL);
-        accommodationRepository.persist(accommodation);
     }
 }

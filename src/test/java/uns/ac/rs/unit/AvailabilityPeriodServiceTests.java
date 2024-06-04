@@ -136,16 +136,14 @@ public class AvailabilityPeriodServiceTests {
 
         AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO = new AdditionalAccommodationInfoDTO();
         additionalAccommodationInfoDTO.setAvailabilityPeriod(availabilityPeriodDTO);
-        additionalAccommodationInfoDTO.setPrice(121.21F);
         additionalAccommodationInfoDTO.setIsAvailabilityPeriodBeingUpdated(false);
-        additionalAccommodationInfoDTO.setIsPricePerGuest(true);
 
         Accommodation accommodation = new Accommodation();
         List<AvailabilityPeriod> availabilityPeriods = new ArrayList<>();
         accommodation.setAvailabilityPeriods(availabilityPeriods);
         when(accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId())).thenReturn(accommodation);
 
-        Accommodation result = availabilityPeriodService.changeAvailabilityPeriodAndPriceInfo(additionalAccommodationInfoDTO);
+        Accommodation result = availabilityPeriodService.changeAvailabilityPeriod(additionalAccommodationInfoDTO);
 
         assertEquals(result.getAvailabilityPeriods().size(), 1);
         verify(availabilityPeriodRepository).persist(any(AvailabilityPeriod.class));
