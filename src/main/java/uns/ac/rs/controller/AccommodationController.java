@@ -126,7 +126,7 @@ public class AccommodationController {
 
     @POST
     @Path("/change-availability-and-price-info")
-    public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditiofetchingnalAccommodationInfoDTO additionalAccommodationInfoDTO) {
+    public Response changeAvailabilityAndPriceInfo(@HeaderParam("Authorization") String authorizationHeader, AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
         GeneralResponse response = microserviceCommunicator.processResponse(
                 config.userServiceAPI() + "/auth/authorize/host",
                 "GET",
