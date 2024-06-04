@@ -30,7 +30,7 @@ public class AvailabilityPeriodService {
     @Autowired
     private SpecialAccommodationPricePeriodRepository specialAccommodationPricePeriodRepository;
 
-    public Accommodation changeAvailabilityPeriodAndPriceInfo(AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
+    public Accommodation changeAvailabilityPeriod(AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO) {
 
         AvailabilityPeriodDTO availabilityPeriodDTO = additionalAccommodationInfoDTO.getAvailabilityPeriod();
         Accommodation accommodation = accommodationRepository.findById(availabilityPeriodDTO.getAccommodationId());
@@ -42,7 +42,7 @@ public class AvailabilityPeriodService {
             updateAvailabilityPeriod(availabilityPeriodDTO, accommodation);
         }
 
-        updateAccommodationGeneralPriceInfo(additionalAccommodationInfoDTO, accommodation);
+        accommodationRepository.persist(accommodation);
 
         return accommodation;
     }
@@ -89,13 +89,6 @@ public class AvailabilityPeriodService {
             }
         }
         return false;
-    }
-
-
-    private void updateAccommodationGeneralPriceInfo(AdditionalAccommodationInfoDTO additionalAccommodationInfoDTO, Accommodation accommodation) {
-        accommodation.setPrice(additionalAccommodationInfoDTO.getPrice());
-        accommodation.setPricePerGuest(additionalAccommodationInfoDTO.getIsPricePerGuest());
-        accommodationRepository.persist(accommodation);
     }
 
     private void updateAvailabilityPeriod(AvailabilityPeriodDTO availabilityPeriodDTO, Accommodation accommodation) {

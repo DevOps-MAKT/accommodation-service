@@ -150,6 +150,24 @@ public class AccommodationServiceTests {
         assertEquals("Accommodation 2", minAccommodations.get(1).getName());
     }
 
+    @Test
+    public void testUpdatePriceInfo() {
+        Accommodation accommodation1 = new Accommodation();
+        accommodation1.setId(1L);
+        accommodation1.setPrice(12.02F);
+        accommodation1.setPricePerGuest(true);
 
+        PriceInfoDTO priceInfoDTO = new PriceInfoDTO();
+        priceInfoDTO.setAccommodationId(1);
+        priceInfoDTO.setPrice(13.5F);
+        priceInfoDTO.setPricePerGuest(false);
+
+        when(accommodationRepository.findById(1L)).thenReturn(accommodation1);
+
+        Accommodation accommodation = accommodationService.updatePriceInfo(priceInfoDTO);
+
+        assertEquals(accommodation.getPrice(), priceInfoDTO.getPrice());
+        assertEquals(accommodation.isPricePerGuest(), priceInfoDTO.isPricePerGuest());
+    }
 
 }

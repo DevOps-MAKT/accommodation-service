@@ -7,7 +7,6 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -17,10 +16,9 @@ import uns.ac.rs.GeneralResponse;
 import uns.ac.rs.MicroserviceCommunicator;
 import uns.ac.rs.config.IntegrationConfig;
 import uns.ac.rs.controller.AccommodationController;
-import uns.ac.rs.dto.request.AccommodationForm;
+import uns.ac.rs.dto.PriceInfoDTO;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
 
-import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +40,12 @@ public class AccommodationControllerTests {
     URL getHostsAccommodationsEndpoint;
 
     @TestHTTPEndpoint(AccommodationController.class)
-    @TestHTTPResource("change-availability-and-price-info")
-    URL changeAvailabilityAndPriceInfoEndpoint;
+    @TestHTTPResource("change-availability-info")
+    URL changeAvailabilityInfoEndpoint;
+
+    @TestHTTPEndpoint(AccommodationController.class)
+    @TestHTTPResource("update-price-info")
+    URL updatePriceInfoEndpoint;
 
     @TestHTTPEndpoint(AccommodationController.class)
     @TestHTTPResource("filter?country=Serbia&city=Subotica&noGuests=7&startDate=1715724000000&endDate=1715810400000")
@@ -175,8 +177,6 @@ public class AccommodationControllerTests {
                 "            }" +
                 "        ]" +
                 "    }," +
-                "    \"price\": 121.20," +
-                "    \"isPricePerGuest\": true," +
                 "    \"isAvailabilityPeriodBeingUpdated\": false" +
                 "}";
 
@@ -198,7 +198,7 @@ public class AccommodationControllerTests {
                 .header("Authorization", "Bearer good-jwt")
                 .body(requestBody)
         .when()
-                .post(changeAvailabilityAndPriceInfoEndpoint)
+                .post(changeAvailabilityInfoEndpoint)
         .then()
                 .statusCode(200)
                 .body("data.location.country", equalTo("Serbia"))
@@ -208,9 +208,6 @@ public class AccommodationControllerTests {
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
-                .body("data.availabilityPeriods.size()", equalTo(1))
-                .body("data.price", equalTo(121.2F))
-                .body("data.pricePerGuest", equalTo(true))
                 .body("data.availabilityPeriods.size()", equalTo(1))
                 .body("message", equalTo("Availability period successfully added"));
     }
@@ -238,8 +235,6 @@ public class AccommodationControllerTests {
                 "            }" +
                 "        ]" +
                 "    }," +
-                "    \"price\": 116.20," +
-                "    \"isPricePerGuest\": false," +
                 "    \"isAvailabilityPeriodBeingUpdated\": true" +
                 "}";
 
@@ -261,7 +256,7 @@ public class AccommodationControllerTests {
                 .header("Authorization", "Bearer good-jwt")
                 .body(requestBody)
         .when()
-                .post(changeAvailabilityAndPriceInfoEndpoint)
+                .post(changeAvailabilityInfoEndpoint)
         .then()
                 .statusCode(200)
                 .body("data.location.country", equalTo("Serbia"))
@@ -271,9 +266,6 @@ public class AccommodationControllerTests {
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
-                .body("data.availabilityPeriods.size()", equalTo(1))
-                .body("data.price", equalTo(116.2F))
-                .body("data.pricePerGuest", equalTo(false))
                 .body("data.availabilityPeriods.size()", equalTo(1))
                 .body("message", equalTo("Availability period successfully added"));
     }
@@ -300,8 +292,6 @@ public class AccommodationControllerTests {
                 "            }" +
                 "        ]" +
                 "    }," +
-                "    \"price\": 116.20," +
-                "    \"isPricePerGuest\": false," +
                 "    \"isAvailabilityPeriodBeingUpdated\": false" +
                 "}";
 
@@ -316,7 +306,7 @@ public class AccommodationControllerTests {
                 .header("Authorization", "Bearer good-jwt")
                 .body(requestBody)
         .when()
-                .post(changeAvailabilityAndPriceInfoEndpoint)
+                .post(changeAvailabilityInfoEndpoint)
         .then()
                 .statusCode(400)
                 .body("data", equalTo(""))
@@ -378,6 +368,33 @@ public class AccommodationControllerTests {
 
     @Test
     @Order(9)
+    public void whenChangePriceInfo_thenReturnAccommodationWithUpdatedPriceInfo() {
+        doReturn(new GeneralResponse("host@gmail.com", "200"))
+                .when(microserviceCommunicator)
+                .processResponse(config.userServiceAPI() + "/auth/authorize/host",
+                        "GET",
+                        "Bearer good-jwt");
+
+        PriceInfoDTO priceInfoDTO = new PriceInfoDTO();
+        priceInfoDTO.setAccommodationId(1);
+        priceInfoDTO.setPrice(149.99f);
+        priceInfoDTO.setPricePerGuest(true);
+
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer good-jwt")
+                .body(priceInfoDTO)
+        .when()
+                .patch(updatePriceInfoEndpoint)
+        .then()
+                .statusCode(200)
+                .body("data.price", equalTo(149.99f))
+                .body("data.pricePerGuest", equalTo(true))
+                .body("message", equalTo("Successfully updated accommodation price info"));
+    }
+
+    @Test
+    @Order(10)
     public void whenDeactivateHost_thenTerminateAccommodations() {
         given()
                 .contentType(ContentType.JSON)
