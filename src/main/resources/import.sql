@@ -10,4 +10,3 @@ INSERT INTO accommodation_features (feature) VALUES
 ('Free Parking'),
 ('Pet friendly'),
 ('Pool');
-

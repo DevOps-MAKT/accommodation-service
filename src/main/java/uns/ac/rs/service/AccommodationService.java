@@ -65,6 +65,10 @@ public class AccommodationService {
         return checkAvailabilityPeriods(startDate, endDate, accommodations);
     }
 
+    public AccommodationResponseDTO getById(Long id) {
+        return new AccommodationResponseDTO(accommodationRepository.findById(id));
+    }
+
     public boolean deactivateHostsAccommodations(String email) {
         try {
             Optional<List<Accommodation>> accommodations = accommodationRepository.findByHostEmail(email);
