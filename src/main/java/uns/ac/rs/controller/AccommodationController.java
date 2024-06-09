@@ -18,6 +18,7 @@ import uns.ac.rs.dto.AdditionalAccommodationInfoDTO;
 import uns.ac.rs.dto.MinAccommodationDTO;
 import uns.ac.rs.dto.PriceInfoDTO;
 import uns.ac.rs.dto.request.AccommodationForm;
+import uns.ac.rs.dto.response.AccommodationBriefResponseDTO;
 import uns.ac.rs.dto.response.AccommodationResponseDTO;
 import uns.ac.rs.dto.response.ReservationResponseDTO;
 import uns.ac.rs.model.Accommodation;
@@ -215,7 +216,7 @@ public class AccommodationController {
             accommodation.setReservations(reservations);
 
             GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
-                    config.userServiceAPI() + "/user/avg-rating/" + accommodation.getName(),
+                    config.userServiceAPI() + "/user/avg-rating/" + accommodation.getId(),
                     "GET",
                     ""
             );
@@ -267,17 +268,17 @@ public class AccommodationController {
 
         logger.info("Retrieving reservations and average rating for accommodation");
         GeneralResponse reservationsResponse = microserviceCommunicator.processResponse(
-                    config.reservationServiceAPI() + "/reservation/" + accommodation.getId(),
-                    "GET",
-                    "");
+                config.reservationServiceAPI() + "/reservation/" + accommodation.getId(),
+                "GET",
+                "");
 
         List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
         accommodation.setReservations(reservations);
 
         GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
-                    config.userServiceAPI() + "/user/avg-rating/" + accommodation.getId(),
-                    "GET",
-                    ""
+                config.userServiceAPI() + "/user/avg-rating/" + accommodation.getId(),
+                "GET",
+                ""
         );
 
         Double doubleRating = (Double) ratingResponse.getData();
@@ -287,6 +288,29 @@ public class AccommodationController {
         return Response
                 .ok()
                 .entity(new GeneralResponse<>(accommodation, "Successfully retrieved accommodation"))
+                .build();
+    }
+
+    @GET
+    @Path("/brief/{id}")
+    @PermitAll
+    public Response getBriefAccommodation(@PathParam("id") Long id) {
+        logger.info("Retrieving accommodation info");
+        AccommodationResponseDTO accommodation = accommodationService.getById(id);
+
+        GeneralResponse ratingResponse = microserviceCommunicator.processResponse(
+                config.userServiceAPI() + "/user/avg-rating/" + accommodation.getId(),
+                "GET",
+                ""
+        );
+
+        Double doubleRating = (Double) ratingResponse.getData();
+        float avgRating = doubleRating.floatValue();
+        accommodation.setAvgRating(avgRating);
+
+        return Response
+                .ok()
+                .entity(new GeneralResponse<>(new AccommodationBriefResponseDTO(accommodation), "Successfully retrieved accommodation"))
                 .build();
     }
 
