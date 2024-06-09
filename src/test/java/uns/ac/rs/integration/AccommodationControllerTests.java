@@ -148,6 +148,11 @@ public class AccommodationControllerTests {
                 .processResponse(config.reservationServiceAPI() + "/reservation/1",
                         "GET",
                         "Bearer good-jwt");
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse(config.reservationServiceAPI() + "/reservation/2",
+                        "GET",
+                        "Bearer good-jwt");
 
         given()
                 .contentType(ContentType.JSON)
@@ -202,12 +207,12 @@ public class AccommodationControllerTests {
         .then()
                 .statusCode(200)
                 .body("data.location.country", equalTo("Serbia"))
-                .body("data.location.city", equalTo("Subotica"))
-                .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographURL", equalTo(""))
+                .body("data.location.city", equalTo("Novi Sad"))
+                .body("data.accommodationFeatures.size()", equalTo(0))
+                .body("data.photographURL", equalTo("apartment.webp"))
                 .body("data.minimumNoGuests", equalTo(1))
-                .body("data.maximumNoGuests", equalTo(10))
-                .body("data.hostEmail", equalTo("host@gmail.com"))
+                .body("data.maximumNoGuests", equalTo(4))
+                .body("data.hostEmail", equalTo("pera@gmail.com"))
                 .body("data.availabilityPeriods.size()", equalTo(1))
                 .body("message", equalTo("Availability period successfully added"));
     }
@@ -260,12 +265,12 @@ public class AccommodationControllerTests {
         .then()
                 .statusCode(200)
                 .body("data.location.country", equalTo("Serbia"))
-                .body("data.location.city", equalTo("Subotica"))
-                .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographURL", equalTo(""))
+                .body("data.location.city", equalTo("Novi Sad"))
+                .body("data.accommodationFeatures.size()", equalTo(0))
+                .body("data.photographURL", equalTo("apartment.webp"))
                 .body("data.minimumNoGuests", equalTo(1))
-                .body("data.maximumNoGuests", equalTo(10))
-                .body("data.hostEmail", equalTo("host@gmail.com"))
+                .body("data.maximumNoGuests", equalTo(4))
+                .body("data.hostEmail", equalTo("pera@gmail.com"))
                 .body("data.availabilityPeriods.size()", equalTo(1))
                 .body("message", equalTo("Availability period successfully added"));
     }
@@ -323,10 +328,21 @@ public class AccommodationControllerTests {
                 .processResponse(config.reservationServiceAPI() + "/reservation/1",
                         "GET",
                         "");
+        doReturn(new GeneralResponse(reservations, "200"))
+                .when(microserviceCommunicator)
+                .processResponse(config.reservationServiceAPI() + "/reservation/2",
+                        "GET",
+                        "");
+
 
         doReturn(new GeneralResponse(3.2f, "200"))
                 .when(microserviceCommunicator)
-                .processResponse(config.userServiceAPI() + "/user/avg-rating/some-accommodation",
+                .processResponse(config.userServiceAPI() + "/user/avg-rating/1",
+                        "GET",
+                        "");
+        doReturn(new GeneralResponse(3.2f, "200"))
+                .when(microserviceCommunicator)
+                .processResponse(config.userServiceAPI() + "/user/avg-rating/2",
                         "GET",
                         "");
 
@@ -418,7 +434,7 @@ public class AccommodationControllerTests {
                 .get(retrieveMinAccommodationEndpoint)
         .then()
                 .statusCode(200)
-                .body("data.size()", equalTo(1))
+                .body("data.size()", equalTo(2))
                 .body("message", equalTo("Successfully retrieved names of accommodations"));
     }
 
