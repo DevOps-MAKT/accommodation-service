@@ -19,11 +19,14 @@ public class PhotographService {
 
     public String save(InputStream file, String fileName) throws IOException {
         try {
+            if (!Files.exists(Paths.get(uploadDirectory))) {
+                Files.createDirectories(Paths.get(uploadDirectory));
+            }
             String imageFileName = UUID.randomUUID().toString() + "_" + fileName.replace(' ', '_');
             Files.copy(file, Paths.get(uploadDirectory, imageFileName));
             return imageFileName;
         } catch (Exception e) {
-            logger.error("Error while saving the image: {}", e.getCause());
+            logger.error("Error while saving the image: {}", e.getMessage());
         }
         return "";
     }
