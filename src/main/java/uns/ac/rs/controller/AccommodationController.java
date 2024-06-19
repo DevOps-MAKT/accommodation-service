@@ -27,10 +27,7 @@ import uns.ac.rs.service.AvailabilityPeriodService;
 import uns.ac.rs.service.PhotographService;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Path("/accommodation")
 @RequestScoped
@@ -158,7 +155,11 @@ public class AccommodationController {
                 "GET",
                 authorizationHeader);
 
-        List<ReservationResponseDTO> reservations = (List<ReservationResponseDTO>) reservationsResponse.getData();
+        List<LinkedHashMap> reservationsHashMap = (List<LinkedHashMap>) reservationsResponse.getData();
+        List<ReservationResponseDTO> reservations = new ArrayList<>();
+        for (LinkedHashMap reservation: reservationsHashMap) {
+            reservations.add(new ReservationResponseDTO(reservation));
+        }
         logger.info("Successfully retrieved reservations for provided accommodation");
         if (additionalAccommodationInfoDTO.getIsAvailabilityPeriodBeingUpdated()) {
             boolean areSpecialAccommodationPriceDatesValid = availabilityPeriodService
