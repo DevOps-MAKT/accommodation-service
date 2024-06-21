@@ -76,7 +76,7 @@ public class Accommodation {
     public Accommodation(Location location, List<AccommodationFeature> accommodationFeatures, AccommodationForm form, String hostEmail, String imagePath) {
         this.location = location;
         this.features = accommodationFeatures;
-        this.photographURL = "";
+        this.photographURL = imagePath;
         this.minimumNoGuests = form.minimumNoGuests;
         this.maximumNoGuests = form.maximumNoGuests;
         this.hostEmail = hostEmail;
