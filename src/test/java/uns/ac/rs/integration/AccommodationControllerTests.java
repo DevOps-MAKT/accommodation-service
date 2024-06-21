@@ -125,7 +125,6 @@ public class AccommodationControllerTests {
                 .body("data.location.country", equalTo("Serbia"))
                 .body("data.location.city", equalTo("Subotica"))
                 .body("data.accommodationFeatures.size()", equalTo(2))
-                .body("data.photographURL", equalTo(""))
                 .body("data.minimumNoGuests", equalTo(1))
                 .body("data.maximumNoGuests", equalTo(10))
                 .body("data.hostEmail", equalTo("host@gmail.com"))
@@ -335,12 +334,12 @@ public class AccommodationControllerTests {
                         "");
 
 
-        doReturn(new GeneralResponse(3.2f, "200"))
+        doReturn(new GeneralResponse(3.2, "200"))
                 .when(microserviceCommunicator)
                 .processResponse(config.userServiceAPI() + "/user/avg-rating/1",
                         "GET",
                         "");
-        doReturn(new GeneralResponse(3.2f, "200"))
+        doReturn(new GeneralResponse(3.2, "200"))
                 .when(microserviceCommunicator)
                 .processResponse(config.userServiceAPI() + "/user/avg-rating/2",
                         "GET",

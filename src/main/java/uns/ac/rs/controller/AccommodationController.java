@@ -222,7 +222,7 @@ public class AccommodationController {
                     ""
             );
 
-            float avgRating = (float) ratingResponse.getData();
+            float avgRating = ((Double) ratingResponse.getData()).floatValue();
             accommodation.setAvgRating(avgRating);
         }
         return Response
